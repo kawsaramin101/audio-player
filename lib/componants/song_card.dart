@@ -35,7 +35,9 @@ class _SongCardState extends State<SongCard> {
           child: _isHovered
               ? Marquee(
                   text: widget.song!.path.split('/').last,
-                  style: const TextStyle(fontSize: 14),
+                  style: const TextStyle(
+                    fontSize: 13,
+                  ),
                   scrollAxis: Axis.horizontal,
                   velocity: 100.0,
                   blankSpace: 80.0,
@@ -43,6 +45,9 @@ class _SongCardState extends State<SongCard> {
               : Text(
                   widget.song!.path.split('/').last,
                   overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                  ),
                 ),
         ),
       ),
