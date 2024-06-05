@@ -48,6 +48,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           )
         ],
       ),
+      bottomNavigationBar: BottomAppBar(
+        child: Text("Hello world"),
+      ),
     );
   }
 }
