@@ -50,8 +50,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         ],
       ),
       bottomNavigationBar: const BottomAppBar(
-        child: Player(),
         height: 105.0,
+        child: Player(),
       ),
     );
   }

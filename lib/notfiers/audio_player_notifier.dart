@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 class AudioPlayerModel extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   String? _currentSong;
+  String? _currentPlaylistID;
   bool _isPlaying = false;
 
   String? get currentSong => _currentSong;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:music/notfiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
+import 'package:marquee/marquee.dart';
 
 class Player extends StatefulWidget {
   const Player({super.key});
@@ -15,9 +16,20 @@ class _PlayerState extends State<Player> {
     return Consumer<AudioPlayerModel>(
       builder: (context, audioPlayerModel, child) {
         return Column(children: <Widget>[
-          Text(audioPlayerModel.currentSong != null
-              ? "Playing: ${audioPlayerModel.currentSong!.split('/').last}"
-              : "No song playing"),
+          SizedBox(
+              height: 20.0,
+              child: audioPlayerModel.currentSong != null
+                  ? Marquee(
+                      text: audioPlayerModel.currentSong!.split('/').last,
+                      style: const TextStyle(
+                        fontSize: 13,
+                      ),
+                      scrollAxis: Axis.horizontal,
+                      velocity: 100.0,
+                      blankSpace: 80.0,
+                      startAfter: const Duration(milliseconds: 500),
+                    )
+                  : const Text("")),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

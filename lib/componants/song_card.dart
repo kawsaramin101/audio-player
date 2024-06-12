@@ -50,12 +50,13 @@ class _SongCardState extends State<SongCard> {
                     scrollAxis: Axis.horizontal,
                     velocity: 100.0,
                     blankSpace: 80.0,
+                    startAfter: const Duration(milliseconds: 1000),
                   )
                 : Text(
                     widget.song!.path.split('/').last,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                     ),
                   ),
           ),
