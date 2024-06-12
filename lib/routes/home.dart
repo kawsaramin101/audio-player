@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music/componants/all_songs.dart';
+import 'package:music/componants/player.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -48,8 +49,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           )
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Text("Hello world"),
+      bottomNavigationBar: const BottomAppBar(
+        child: Player(),
+        height: 105.0,
       ),
     );
   }

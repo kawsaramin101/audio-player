@@ -48,7 +48,7 @@ class _AllSongsState extends State<AllSongs> {
                   },
                 ),
               )
-            : Center(child: Text('No folder selected')),
+            : const Center(child: Text('No folder selected')),
       ],
     );
   }
