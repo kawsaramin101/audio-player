@@ -31,56 +31,53 @@ class _PlayerState extends State<Player> {
                     )
                   : const Text("")),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.fast_rewind_rounded,
-                    size: 26.0,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.arrow_left_rounded,
-                    size: 40.0,
-                  ),
-                ),
-                if (audioPlayerModel.isPlaying) ...[
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                   IconButton(
+                    onPressed: () {},
                     icon: const Icon(
-                      Icons.pause,
-                      size: 26.0,
+                      Icons.skip_previous_rounded,
                     ),
-                    onPressed: audioPlayerModel.pause,
                   ),
-                ] else ...[
                   IconButton(
+                    onPressed: () {},
                     icon: const Icon(
-                      Icons.play_arrow,
-                      size: 26.0,
+                      Icons.fast_rewind_rounded,
                     ),
-                    onPressed: audioPlayerModel.resume,
+                  ),
+                  if (audioPlayerModel.isPlaying) ...[
+                    IconButton(
+                      icon: const Icon(
+                        Icons.pause,
+                      ),
+                      onPressed: audioPlayerModel.pause,
+                    ),
+                  ] else ...[
+                    IconButton(
+                      icon: const Icon(
+                        Icons.play_arrow,
+                      ),
+                      onPressed: audioPlayerModel.resume,
+                    ),
+                  ],
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.fast_forward_rounded,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.skip_next_rounded,
+                    ),
                   ),
                 ],
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.arrow_right_rounded,
-                    size: 40.0,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.fast_forward_rounded,
-                    size: 26.0,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ]);

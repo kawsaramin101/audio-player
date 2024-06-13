@@ -66,8 +66,8 @@ class _AllSongsState extends State<AllSongs> {
       for (var file in files) {
         final song = Song()
           ..filePath = file.path
-          ..url = '' // Add the appropriate URL if needed
-          ..length = await file.length(); // Calculate length as needed
+          ..url = ''
+          ..length = await file.length();
 
         await isar.songs.put(song);
         playlist.songs.add(song);

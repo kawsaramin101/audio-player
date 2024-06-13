@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music/data/song_model.dart';
@@ -56,7 +54,7 @@ class _SongCardState extends State<SongCard> {
                     scrollAxis: Axis.horizontal,
                     velocity: 100.0,
                     blankSpace: 80.0,
-                    startAfter: const Duration(milliseconds: 1000),
+                    startAfter: const Duration(milliseconds: 6000),
                   )
                 : Text(
                     widget.song!.filePath!.split('/').last,

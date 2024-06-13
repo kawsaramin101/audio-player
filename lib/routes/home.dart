@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:music/componants/home/all_songs.dart';
 import 'package:music/componants/shared/player.dart';
+import 'package:music/tabs/playlist.dart' as playlist;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -45,13 +46,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             child: AllSongs(),
           ),
           Center(
-            child: Text("All your playlists here"),
+            child: playlist.Playlist(),
           )
         ],
       ),
-      bottomNavigationBar: const BottomAppBar(
-        height: 105.0,
-        child: Player(),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.deepPurple[800],
+        height: 90.0,
+        child: const Player(),
       ),
     );
   }
