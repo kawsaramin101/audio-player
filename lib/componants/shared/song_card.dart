@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:music/data/song_model.dart';
 import 'package:music/notfiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
 
 class SongCard extends StatefulWidget {
-  final File? song;
+  final Song? song;
 
   const SongCard({super.key, this.song});
 
@@ -18,12 +19,17 @@ class _SongCardState extends State<SongCard> {
   bool _isHovered = false;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         if (widget.song != null) {
           // Assuming song path is the song file path
-          context.read<AudioPlayerModel>().playSong(widget.song!.path);
+          context.read<AudioPlayerModel>().playSong(widget.song!.filePath!);
         }
       },
       child: MouseRegion(
@@ -43,7 +49,7 @@ class _SongCardState extends State<SongCard> {
             height: 20,
             child: _isHovered
                 ? Marquee(
-                    text: widget.song!.path.split('/').last,
+                    text: widget.song!.filePath!.split('/').last,
                     style: const TextStyle(
                       fontSize: 13,
                     ),
@@ -53,7 +59,7 @@ class _SongCardState extends State<SongCard> {
                     startAfter: const Duration(milliseconds: 1000),
                   )
                 : Text(
-                    widget.song!.path.split('/').last,
+                    widget.song!.filePath!.split('/').last,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,

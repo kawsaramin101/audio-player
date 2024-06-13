@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:music/componants/all_songs.dart';
-import 'package:music/componants/player.dart';
+import 'package:music/componants/home/all_songs.dart';
+import 'package:music/componants/shared/player.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
