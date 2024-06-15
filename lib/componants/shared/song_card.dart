@@ -6,8 +6,9 @@ import 'package:provider/provider.dart';
 
 class SongCard extends StatefulWidget {
   final Song? song;
+  final int? playListId;
 
-  const SongCard({super.key, this.song});
+  const SongCard({super.key, this.song, this.playListId});
 
   @override
   State<SongCard> createState() => _SongCardState();
@@ -54,7 +55,7 @@ class _SongCardState extends State<SongCard> {
                     scrollAxis: Axis.horizontal,
                     velocity: 100.0,
                     blankSpace: 80.0,
-                    startAfter: const Duration(milliseconds: 6000),
+                    startAfter: const Duration(milliseconds: 600),
                   )
                 : Text(
                     widget.song!.filePath!.split('/').last,
