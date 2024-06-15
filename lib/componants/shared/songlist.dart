@@ -25,7 +25,6 @@ class _SongListState extends State<SongList> {
   void initState() {
     super.initState();
     setupWatcher();
-
     fetchSongs();
   }
 
@@ -75,6 +74,8 @@ class _SongListState extends State<SongList> {
               if (song != null) {
                 return SongCard(
                   song: song,
+                  playListId: widget.playlistId,
+                  playlistSongId: playlistSong.id,
                 );
               } else {
                 return const SizedBox.shrink();

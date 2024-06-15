@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:music/notfiers/audio_player_notifier.dart';
+import 'package:music/notifiers/audio_player_notifier.dart';
 
 import 'package:music/routes/home.dart';
 import 'package:music/routes/playlist.dart' as playlist_route;
@@ -27,7 +27,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AudioPlayerModel()),
+        ChangeNotifierProvider(create: (context) => AudioPlayerNotifier()),
         Provider<Isar>.value(value: isar),
       ],
       child: MaterialApp(

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music/data/song_model.dart';
-import 'package:music/notfiers/audio_player_notifier.dart';
+import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
 
 class SongCard extends StatefulWidget {
   final Song? song;
   final int? playListId;
+  final int? playlistSongId;
 
-  const SongCard({super.key, this.song, this.playListId});
+  const SongCard({super.key, this.song, this.playListId, this.playlistSongId});
 
   @override
   State<SongCard> createState() => _SongCardState();
@@ -28,7 +29,12 @@ class _SongCardState extends State<SongCard> {
       onTap: () {
         if (widget.song != null) {
           // Assuming song path is the song file path
-          context.read<AudioPlayerModel>().playSong(widget.song!.filePath!);
+          context.read<AudioPlayerNotifier>().setSong(
+                widget.song!.id,
+                widget.playListId!,
+                widget.playlistSongId!,
+                widget.song!.filePath!,
+              );
         }
       },
       child: MouseRegion(
@@ -49,9 +55,7 @@ class _SongCardState extends State<SongCard> {
             child: _isHovered
                 ? Marquee(
                     text: widget.song!.filePath!.split('/').last,
-                    style: const TextStyle(
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(fontSize: 13),
                     scrollAxis: Axis.horizontal,
                     velocity: 100.0,
                     blankSpace: 80.0,
@@ -60,9 +64,7 @@ class _SongCardState extends State<SongCard> {
                 : Text(
                     widget.song!.filePath!.split('/').last,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(fontSize: 13),
                   ),
           ),
         ),
