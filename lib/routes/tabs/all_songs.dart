@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:music/componants/shared/song_card.dart';
 import 'package:music/data/playlist_model.dart';
+import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
 import 'package:provider/provider.dart';
 
@@ -16,9 +17,7 @@ class AllSongs extends StatefulWidget {
 }
 
 class _AllSongsState extends State<AllSongs> {
-  List<Song> songs = [];
-
-  String? selectedFolder;
+  List<PlaylistSong> playlistSongs = [];
 
   @override
   void initState() {
@@ -34,8 +33,12 @@ class _AllSongsState extends State<AllSongs> {
         .findFirst();
     if (mainPlaylist != null) {
       await mainPlaylist.songs.load();
+      final loadedPlaylistSongs = mainPlaylist.songs.toList();
+      for (var playlistSong in loadedPlaylistSongs) {
+        await playlistSong.song.load();
+      }
       setState(() {
-        songs = mainPlaylist.songs.toList();
+        playlistSongs = loadedPlaylistSongs;
       });
     }
   }
@@ -51,27 +54,62 @@ class _AllSongsState extends State<AllSongs> {
 
   Future<void> saveFilesToIsar(List<File> files) async {
     final isar = Provider.of<Isar>(context, listen: false);
-    await isar.writeTxn(() async {
-      var playlist = await isar.playlists
-          .filter()
-          .typeEqualTo(PlaylistType.main)
-          .findFirst();
-      if (playlist == null) {
-        playlist = Playlist()
-          ..name = 'main'
-          ..type = PlaylistType.main;
-        await isar.playlists.put(playlist);
+
+    // Check if the main playlist exists outside of transaction
+    var mainPlaylist = await isar.playlists
+        .filter()
+        .typeEqualTo(PlaylistType.main)
+        .findFirst();
+
+    // If not, create it
+    if (mainPlaylist == null) {
+      mainPlaylist = Playlist()
+        ..name = 'main'
+        ..type = PlaylistType.main;
+      await isar.writeTxn(() async {
+        await isar.playlists.put(mainPlaylist!);
+      });
+    }
+
+    final newPlaylistSongs = <PlaylistSong>[];
+
+    for (var file in files) {
+      // Check if the song already exists by file path or URL
+      var song =
+          await isar.songs.filter().filePathEqualTo(file.path).findFirst();
+
+      if (song == null) {
+        // If the song doesn't exist, create it
+        song = Song()
+          ..filePath = file.path
+          ..url = null
+          ..length = await file
+              .length(); // You might need to calculate the length differently
+        await isar.writeTxn(() async {
+          await isar.songs.put(song!);
+        });
       }
 
-      for (var file in files) {
-        final song = Song()
-          ..filePath = file.path
-          ..url = ''
-          ..length = await file.length();
+      // Create the PlaylistSong entry
+      var playlistSong = PlaylistSong()
+        ..order = mainPlaylist.songs.length
+        ..playlist.value = mainPlaylist
+        ..song.value = song;
 
-        await isar.songs.put(song);
-        playlist.songs.add(song);
-        await playlist.songs.save();
+      newPlaylistSongs.add(playlistSong);
+    }
+
+    await isar.writeTxn(() async {
+      for (var playlistSong in newPlaylistSongs) {
+        await isar.playlistSongs.put(playlistSong);
+
+        // Link the song to the playlist
+        mainPlaylist!.songs.add(playlistSong);
+        await mainPlaylist.songs.save();
+
+        // Link the playlistSong to the song
+        playlistSong.song.value!.playlists.add(playlistSong);
+        await playlistSong.song.value!.playlists.save();
       }
     });
   }
@@ -85,15 +123,20 @@ class _AllSongsState extends State<AllSongs> {
           child: const Text('Pick A Folder'),
         ),
         Expanded(
-          child: songs.isNotEmpty
+          child: playlistSongs.isNotEmpty
               ? ListView.separated(
-                  itemCount: songs.length,
+                  itemCount: playlistSongs.length,
                   separatorBuilder: (context, index) => const Divider(),
                   itemBuilder: (context, index) {
-                    final song = songs[index];
-                    return SongCard(
-                      song: song,
-                    );
+                    final playlistSong = playlistSongs[index];
+                    final song = playlistSong.song.value;
+                    if (song != null) {
+                      return SongCard(
+                        song: song,
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
                   },
                 )
               : const Center(child: Text('No songs available')),
@@ -112,7 +155,6 @@ Future<List<File>> scanForMusicFiles(String directoryPath) async {
   final directory = Directory(directoryPath);
   List<File> musicFiles = [];
 
-  // Recursively scan the directory for music files
   await for (var entity
       in directory.list(recursive: true, followLinks: false)) {
     if (entity is File) {

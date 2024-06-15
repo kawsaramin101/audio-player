@@ -1,5 +1,5 @@
 import 'package:isar/isar.dart';
-import 'playlist_model.dart';
+import 'package:music/data/playlist_song_model.dart';
 
 part 'song_model.g.dart';
 
@@ -11,5 +11,6 @@ class Song {
   late String? url;
   late int length;
 
-  final playlist = IsarLink<Playlist>();
+  @Backlink(to: 'song')
+  final playlists = IsarLinks<PlaylistSong>();
 }

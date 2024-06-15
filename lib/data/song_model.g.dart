@@ -40,11 +40,12 @@ const SongSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {
-    r'playlist': LinkSchema(
-      id: 3571415337285984932,
-      name: r'playlist',
-      target: r'Playlist',
-      single: true,
+    r'playlists': LinkSchema(
+      id: -6762565121486107710,
+      name: r'playlists',
+      target: r'PlaylistSong',
+      single: false,
+      linkName: r'song',
     )
   },
   embeddedSchemas: {},
@@ -123,12 +124,13 @@ Id _songGetId(Song object) {
 }
 
 List<IsarLinkBase<dynamic>> _songGetLinks(Song object) {
-  return [object.playlist];
+  return [object.playlists];
 }
 
 void _songAttach(IsarCollection<dynamic> col, Id id, Song object) {
   object.id = id;
-  object.playlist.attach(col, col.isar.collection<Playlist>(), r'playlist', id);
+  object.playlists
+      .attach(col, col.isar.collection<PlaylistSong>(), r'playlists', id);
 }
 
 extension SongQueryWhereSort on QueryBuilder<Song, Song, QWhere> {
@@ -604,16 +606,59 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
 extension SongQueryObject on QueryBuilder<Song, Song, QFilterCondition> {}
 
 extension SongQueryLinks on QueryBuilder<Song, Song, QFilterCondition> {
-  QueryBuilder<Song, Song, QAfterFilterCondition> playlist(
-      FilterQuery<Playlist> q) {
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlists(
+      FilterQuery<PlaylistSong> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'playlist');
+      return query.link(q, r'playlists');
     });
   }
 
-  QueryBuilder<Song, Song, QAfterFilterCondition> playlistIsNull() {
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsLengthEqualTo(
+      int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'playlist', 0, true, 0, true);
+      return query.linkLength(r'playlists', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'playlists', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'playlists', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'playlists', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'playlists', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> playlistsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'playlists', lower, includeLower, upper, includeUpper);
     });
   }
 }

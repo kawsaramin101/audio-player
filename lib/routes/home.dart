@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:music/componants/home/all_songs.dart';
+import 'package:music/routes/tabs/all_songs.dart';
 import 'package:music/componants/shared/player.dart';
-import 'package:music/tabs/playlist.dart' as playlist;
+import 'package:music/routes/tabs/playlists.dart' as playlist;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -46,7 +46,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             child: AllSongs(),
           ),
           Center(
-            child: playlist.Playlist(),
+            child: playlist.Playlists(),
           )
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:isar/isar.dart';
+import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:provider/provider.dart';
 import 'package:music/data/playlist_model.dart';
 
@@ -35,12 +36,19 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
         ..name = name
         ..type = type;
 
-      await isar.playlists.put(newPlaylist);
+      // await isar.playlists.put(newPlaylist);
+      int playlistId = await isar.playlists.put(newPlaylist);
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        Navigator.pushNamed(context, "/playlist",
+            arguments: PlaylistArguments(playlistId));
+      }
     });
 
-    if (context.mounted) {
-      Navigator.of(context).pop();
-    }
+    // if (context.mounted) {
+    //   Navigator.of(context).pop();
+    // }
   }
 
   @override

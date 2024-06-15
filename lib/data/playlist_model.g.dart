@@ -37,10 +37,11 @@ const PlaylistSchema = CollectionSchema(
   indexes: {},
   links: {
     r'songs': LinkSchema(
-      id: -3283070443013070831,
+      id: 3024707682599953402,
       name: r'songs',
-      target: r'Song',
+      target: r'PlaylistSong',
       single: false,
+      linkName: r'playlist',
     )
   },
   embeddedSchemas: {},
@@ -122,7 +123,7 @@ List<IsarLinkBase<dynamic>> _playlistGetLinks(Playlist object) {
 
 void _playlistAttach(IsarCollection<dynamic> col, Id id, Playlist object) {
   object.id = id;
-  object.songs.attach(col, col.isar.collection<Song>(), r'songs', id);
+  object.songs.attach(col, col.isar.collection<PlaylistSong>(), r'songs', id);
 }
 
 extension PlaylistQueryWhereSort on QueryBuilder<Playlist, Playlist, QWhere> {
@@ -444,7 +445,7 @@ extension PlaylistQueryObject
 extension PlaylistQueryLinks
     on QueryBuilder<Playlist, Playlist, QFilterCondition> {
   QueryBuilder<Playlist, Playlist, QAfterFilterCondition> songs(
-      FilterQuery<Song> q) {
+      FilterQuery<PlaylistSong> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'songs');
     });

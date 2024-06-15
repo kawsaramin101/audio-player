@@ -1,5 +1,5 @@
 import 'package:isar/isar.dart';
-import 'package:music/data/song_model.dart';
+import 'package:music/data/playlist_song_model.dart';
 
 part 'playlist_model.g.dart';
 
@@ -12,7 +12,8 @@ class Playlist {
   @enumerated
   late PlaylistType type;
 
-  final songs = IsarLinks<Song>();
+  @Backlink(to: 'playlist')
+  final songs = IsarLinks<PlaylistSong>();
 }
 
 enum PlaylistType {
