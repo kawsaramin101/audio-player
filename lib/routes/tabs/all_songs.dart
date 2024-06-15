@@ -4,6 +4,7 @@ import 'package:isar/isar.dart';
 import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:music/componants/shared/song_card.dart';
+import 'package:music/componants/shared/songlist.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
@@ -122,24 +123,10 @@ class _AllSongsState extends State<AllSongs> {
           onPressed: pickAndScanFolder,
           child: const Text('Pick A Folder'),
         ),
-        Expanded(
-          child: playlistSongs.isNotEmpty
-              ? ListView.separated(
-                  itemCount: playlistSongs.length,
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemBuilder: (context, index) {
-                    final playlistSong = playlistSongs[index];
-                    final song = playlistSong.song.value;
-                    if (song != null) {
-                      return SongCard(
-                        song: song,
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  },
-                )
-              : const Center(child: Text('No songs available')),
+        const Expanded(
+          child: SongList(
+            playlistId: 1,
+          ),
         ),
       ],
     );

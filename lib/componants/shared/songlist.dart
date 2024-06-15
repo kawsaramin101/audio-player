@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:music/data/playlist_model.dart';
@@ -16,11 +18,30 @@ class SongList extends StatefulWidget {
 
 class _SongListState extends State<SongList> {
   List<PlaylistSong> playlistSongs = [];
+  Stream<void>? playlistStream;
+  StreamSubscription<void>? subscription;
 
   @override
   void initState() {
     super.initState();
+    setupWatcher();
+
     fetchSongs();
+  }
+
+  @override
+  void dispose() {
+    subscription?.cancel();
+    super.dispose();
+  }
+
+  void setupWatcher() {
+    final isar = Provider.of<Isar>(context, listen: false);
+    playlistStream = isar.playlistSongs.watchLazy();
+
+    subscription = playlistStream?.listen((_) {
+      fetchSongs();
+    });
   }
 
   void fetchSongs() async {
@@ -57,7 +78,7 @@ class _SongListState extends State<SongList> {
                 );
               } else {
                 return const SizedBox
-                    .shrink(); // Or handle the null case appropriately
+                    .shrink(); // Handle the null case appropriately
               }
             },
           );
