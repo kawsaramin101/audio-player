@@ -77,8 +77,7 @@ class _SongListState extends State<SongList> {
                   song: song,
                 );
               } else {
-                return const SizedBox
-                    .shrink(); // Handle the null case appropriately
+                return const SizedBox.shrink();
               }
             },
           );

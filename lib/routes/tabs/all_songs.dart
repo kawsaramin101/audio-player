@@ -1,13 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:isar/isar.dart';
-import 'dart:io';
 import 'package:mime/mime.dart';
-import 'package:music/componants/shared/song_card.dart';
+
 import 'package:music/componants/shared/songlist.dart';
+
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
+
 import 'package:provider/provider.dart';
 
 class AllSongs extends StatefulWidget {
@@ -18,30 +21,9 @@ class AllSongs extends StatefulWidget {
 }
 
 class _AllSongsState extends State<AllSongs> {
-  List<PlaylistSong> playlistSongs = [];
-
   @override
   void initState() {
     super.initState();
-    fetchSongsFromIsar();
-  }
-
-  void fetchSongsFromIsar() async {
-    final isar = Provider.of<Isar>(context, listen: false);
-    final mainPlaylist = await isar.playlists
-        .filter()
-        .typeEqualTo(PlaylistType.main)
-        .findFirst();
-    if (mainPlaylist != null) {
-      await mainPlaylist.songs.load();
-      final loadedPlaylistSongs = mainPlaylist.songs.toList();
-      for (var playlistSong in loadedPlaylistSongs) {
-        await playlistSong.song.load();
-      }
-      setState(() {
-        playlistSongs = loadedPlaylistSongs;
-      });
-    }
   }
 
   void pickAndScanFolder() async {
@@ -49,14 +31,13 @@ class _AllSongsState extends State<AllSongs> {
     if (folderPath != null) {
       List<File> files = await scanForMusicFiles(folderPath);
       await saveFilesToIsar(files);
-      fetchSongsFromIsar();
     }
   }
 
   Future<void> saveFilesToIsar(List<File> files) async {
     final isar = Provider.of<Isar>(context, listen: false);
 
-    // Check if the main playlist exists outside of transaction
+    // Check if the main playlist exists
     var mainPlaylist = await isar.playlists
         .filter()
         .typeEqualTo(PlaylistType.main)
