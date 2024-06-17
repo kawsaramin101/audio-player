@@ -36,7 +36,9 @@ class _PlayerState extends State<Player> {
 
   void _playSong(String songPath) async {
     await _audioPlayer.play(DeviceFileSource(songPath));
-    context.read<AudioPlayerNotifier>().play();
+    if (mounted) {
+      context.read<AudioPlayerNotifier>().play();
+    }
   }
 
   void _playNextSong() async {
@@ -64,12 +66,14 @@ class _PlayerState extends State<Player> {
     final nextSong = nextPlaylistSong.song.value;
     if (nextSong == null) return;
 
-    context.read<AudioPlayerNotifier>().setSong(
-          nextSong.id,
-          audioPlayerModel.currentPlaylistId!,
-          nextPlaylistSong.id,
-          nextSong.filePath!,
-        );
+    if (mounted) {
+      context.read<AudioPlayerNotifier>().setSong(
+            nextSong.id,
+            audioPlayerModel.currentPlaylistId!,
+            nextPlaylistSong.id,
+            nextSong.filePath!,
+          );
+    }
 
     await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
   }
@@ -113,7 +117,9 @@ class _PlayerState extends State<Player> {
                         icon: const Icon(Icons.pause),
                         onPressed: () async {
                           await _audioPlayer.pause();
-                          context.read<AudioPlayerNotifier>().pause();
+                          if (context.mounted) {
+                            context.read<AudioPlayerNotifier>().pause();
+                          }
                         },
                       ),
                     ] else if (audioPlayerModel.currentSong != null) ...[
