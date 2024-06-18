@@ -61,15 +61,18 @@ class _PlaylistState extends State<Playlist> {
                 : Expanded(
                     child: Column(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              "/addSongToPlaylist",
-                              arguments: PlaylistArguments(playlist!.id),
-                            );
-                          },
-                          child: const Text('Add Song'),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                "/addSongToPlaylist",
+                                arguments: PlaylistArguments(playlist!.id),
+                              );
+                            },
+                            child: const Text('Add or Remove Song'),
+                          ),
                         ),
                         Expanded(
                           child: SongList(
