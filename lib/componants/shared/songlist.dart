@@ -8,9 +8,9 @@ import 'package:music/componants/shared/song_card.dart';
 import 'package:provider/provider.dart';
 
 class SongList extends StatefulWidget {
-  final int playlistId;
+  final int? playlistId;
 
-  const SongList({super.key, required this.playlistId});
+  const SongList({super.key, this.playlistId});
 
   @override
   State<SongList> createState() => _SongListState();
@@ -18,6 +18,7 @@ class SongList extends StatefulWidget {
 
 class _SongListState extends State<SongList> {
   List<PlaylistSong> playlistSongs = [];
+  Playlist? playlist;
   Stream<void>? playlistStream;
   StreamSubscription<void>? subscription;
 
@@ -46,13 +47,27 @@ class _SongListState extends State<SongList> {
   void fetchSongs() async {
     final isar = Provider.of<Isar>(context, listen: false);
 
-    final playlist = await isar.playlists.get(widget.playlistId);
+    if (widget.playlistId != null) {
+      playlist = await isar.playlists.get(widget.playlistId!);
+    } else {
+      playlist = await isar.playlists.filter().nameEqualTo('main').findFirst();
+    }
+
     if (playlist != null) {
-      await playlist.songs.load();
-      final loadedPlaylistSongs = playlist.songs.toList();
+      await playlist!.songs.load();
+
+      // Query playlist songs and order by 'order' property
+      final loadedPlaylistSongs = await isar.playlistSongs
+          .filter()
+          .playlist((q) => q.idEqualTo(playlist!.id))
+          .sortByOrder()
+          .findAll();
+
+      // Load song details for each playlist song
       for (var playlistSong in loadedPlaylistSongs) {
         await playlistSong.song.load();
       }
+
       setState(() {
         playlistSongs = loadedPlaylistSongs;
       });
@@ -74,7 +89,7 @@ class _SongListState extends State<SongList> {
               if (song != null) {
                 return SongCard(
                   song: song,
-                  playListId: widget.playlistId,
+                  playListId: playlist!.id,
                   playlistSongId: playlistSong.id,
                 );
               } else {

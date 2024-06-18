@@ -16,6 +16,20 @@ class PlaylistSong {
 
 Future<void> createPlaylistSong(Isar isar, Song song, Playlist playlist) async {
   await isar.writeTxn(() async {
+    // Check if the PlaylistSong already exists
+    final existingPlaylistSong = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(playlist.id))
+        .and()
+        .song((q) => q.idEqualTo(song.id))
+        .findFirst();
+
+    // If the PlaylistSong already exists, do nothing
+    if (existingPlaylistSong != null) {
+      return;
+    }
+
+    // Fetch the highest order value in the playlist
     final maxOrderPlaylistSong = await isar.playlistSongs
         .filter()
         .playlist((q) => q.idEqualTo(playlist.id))
@@ -24,6 +38,7 @@ Future<void> createPlaylistSong(Isar isar, Song song, Playlist playlist) async {
 
     final newOrder = (maxOrderPlaylistSong?.order ?? -1) + 1;
 
+    // If the PlaylistSong does not exist, create a new one
     final newPlaylistSong = PlaylistSong()
       ..playlist.value = playlist
       ..song.value = song

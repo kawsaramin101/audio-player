@@ -132,7 +132,7 @@ class PlayerState extends State<Player> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: Text(
                           "placeholder",
                         ),

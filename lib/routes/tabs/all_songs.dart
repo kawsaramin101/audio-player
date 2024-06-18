@@ -84,9 +84,7 @@ class _AllSongsState extends State<AllSongs> {
           child: const Text('Pick A Folder'),
         ),
         const Expanded(
-          child: SongList(
-            playlistId: 1,
-          ),
+          child: SongList(),
         ),
       ],
     );
