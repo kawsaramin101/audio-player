@@ -39,18 +39,16 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
 
       // await isar.playlists.put(newPlaylist);
       playlistId = await isar.playlists.put(newPlaylist);
+
+      if (context.mounted) {
+        debugPrint("$playlistId");
+        Navigator.pushNamed(
+          context,
+          "/playlist",
+          arguments: PlaylistArguments(playlistId),
+        );
+      }
     });
-
-    if (context.mounted) {
-      Navigator.of(context).pop();
-
-      debugPrint("$playlistId");
-      Navigator.pushNamed(
-        context,
-        "/playlist",
-        arguments: PlaylistArguments(playlistId),
-      );
-    }
   }
 
   @override
@@ -123,7 +121,6 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
         TextButton(
           child: const Text('Next'),
           onPressed: () {
-            // Add your "Next" button functionality here
             _createPlaylist(context);
           },
         ),

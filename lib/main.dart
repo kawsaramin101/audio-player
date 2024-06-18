@@ -27,6 +27,7 @@ void main() async {
 
   // await clearDatabase(isar);
   // TODO: implement order when creating and fetching playlistSong
+  // TODO: fix error when navigating to playlist route in playlist_name_dialog
 
   runApp(
     MultiProvider(
