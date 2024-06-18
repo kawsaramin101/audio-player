@@ -37,6 +37,7 @@ class _PlaylistState extends State<Playlist> {
         Container(
           color: Theme.of(context).primaryColor,
           child: AppBar(
+            backgroundColor: Colors.grey[900],
             title: Text('Playlist ${playlist?.name ?? ''}'),
             automaticallyImplyLeading: true, // Enable back button
           ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:isar/isar.dart';
 import 'package:music/data/playlist_song_model.dart';
+import 'dart:async';
 
 class Player extends StatefulWidget {
   // const Player({super.key});
@@ -16,11 +17,30 @@ class Player extends StatefulWidget {
 
 class PlayerState extends State<Player> {
   late AudioPlayer _audioPlayer;
+  Duration _currentPosition = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+  late StreamSubscription<Duration> _positionSubscription;
+  late StreamSubscription<Duration> _durationSubscription;
 
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
+
+    // Listen to the current position of the audio
+    _positionSubscription = _audioPlayer.onPositionChanged.listen((position) {
+      setState(() {
+        _currentPosition = position;
+      });
+    });
+
+    // Listen to the total duration of the audio
+    _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
+      setState(() {
+        _totalDuration = duration;
+      });
+    });
+
     _audioPlayer.onPlayerComplete.listen((event) {
       _playNextSong();
     });
@@ -79,6 +99,13 @@ class PlayerState extends State<Player> {
     await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
   }
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerNotifier>(
@@ -100,48 +127,68 @@ class PlayerState extends State<Player> {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.skip_previous_rounded),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.fast_rewind_rounded),
-                    ),
-                    if (audioPlayerModel.isPlaying) ...[
-                      IconButton(
-                        icon: const Icon(Icons.pause),
-                        onPressed: () async {
-                          await _audioPlayer.pause();
-                          if (context.mounted) {
-                            context.read<AudioPlayerNotifier>().pause();
-                          }
-                        },
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "placeholder",
+                        ),
                       ),
-                    ] else if (audioPlayerModel.currentSong != null) ...[
-                      IconButton(
-                        icon: const Icon(Icons.play_arrow),
-                        onPressed: () async {
-                          _playSong(audioPlayerModel.currentSong!);
-                        },
+                      Row(
+                        mainAxisSize: MainAxisSize
+                            .min, // Ensures the row takes up minimal space
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.skip_previous_rounded),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.fast_rewind_rounded),
+                          ),
+                          if (audioPlayerModel.isPlaying) ...[
+                            IconButton(
+                              icon: const Icon(Icons.pause),
+                              onPressed: () async {
+                                await _audioPlayer.pause();
+                                if (context.mounted) {
+                                  context.read<AudioPlayerNotifier>().pause();
+                                }
+                              },
+                            ),
+                          ] else if (audioPlayerModel.currentSong != null) ...[
+                            IconButton(
+                              icon: const Icon(Icons.play_arrow),
+                              onPressed: () async {
+                                _playSong(audioPlayerModel.currentSong!);
+                              },
+                            ),
+                          ],
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.fast_forward_rounded),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.skip_next_rounded),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: Align(
+                          child: Container(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "${_formatDuration(_currentPosition)}/${_formatDuration(_totalDuration)}",
+                            ),
+                          ),
+                        ),
                       ),
                     ],
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.fast_forward_rounded),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.skip_next_rounded),
-                    ),
-                  ],
-                ),
-              ),
+                  )),
             ),
           ],
         );
@@ -151,6 +198,8 @@ class PlayerState extends State<Player> {
 
   @override
   void dispose() {
+    _positionSubscription.cancel();
+    _durationSubscription.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
