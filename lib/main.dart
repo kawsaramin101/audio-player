@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:music/componants/shared/player.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/routes/add_song_to_playlist.dart';
+import 'package:music/routes/route_arguments/playlist_arguments.dart';
 
 import 'package:provider/provider.dart';
 import 'package:isar/isar.dart';
@@ -24,6 +26,7 @@ void main() async {
   );
 
   // await clearDatabase(isar);
+  // TODO: implement order when creating and fetching playlistSong
 
   runApp(
     MultiProvider(
@@ -38,11 +41,8 @@ void main() async {
         themeMode: ThemeMode.dark,
         theme: ThemeData(useMaterial3: true),
         debugShowCheckedModeBanner: false,
-        routes: {
-          '/': (context) => const Home(),
-          '/playlist': (context) => const playlist_route.Playlist(),
-          '/addSongToPlaylist': (context) => const AddSongToPlaylist(),
-        },
+        home: const MainScreen(),
+        initialRoute: "/",
       ),
     ),
   );
@@ -54,4 +54,43 @@ Future<void> clearDatabase(Isar isar) async {
     await isar.songs.clear();
     await isar.playlistSongs.clear();
   });
+}
+
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Navigator(
+        onGenerateRoute: (RouteSettings settings) {
+          WidgetBuilder builder;
+          switch (settings.name) {
+            case '/':
+              builder = (BuildContext context) => const Home();
+              break;
+            case '/playlist':
+              builder = (BuildContext context) {
+                final args = settings.arguments as PlaylistArguments;
+                return playlist_route.Playlist(playlistId: args.id);
+              };
+              break;
+            case '/addSongToPlaylist':
+              builder = (BuildContext context) => AddSongToPlaylist(
+                    args: settings.arguments as PlaylistArguments,
+                  );
+              break;
+            default:
+              throw Exception('Invalid route: ${settings.name}');
+          }
+          return MaterialPageRoute(builder: builder, settings: settings);
+        },
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.deepPurple[800],
+        height: 90.0,
+        child: const Player(),
+      ),
+    );
+  }
 }

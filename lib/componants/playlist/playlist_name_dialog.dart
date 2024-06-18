@@ -31,24 +31,26 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
     final PlaylistType type =
         isYoutubePlaylist ? PlaylistType.youtube : PlaylistType.local;
 
+    int playlistId = 0;
     await isar.writeTxn(() async {
       final newPlaylist = Playlist()
         ..name = name
         ..type = type;
 
       // await isar.playlists.put(newPlaylist);
-      int playlistId = await isar.playlists.put(newPlaylist);
-      if (context.mounted) {
-        Navigator.of(context).pop();
-
-        Navigator.pushNamed(context, "/playlist",
-            arguments: PlaylistArguments(playlistId));
-      }
+      playlistId = await isar.playlists.put(newPlaylist);
     });
 
-    // if (context.mounted) {
-    //   Navigator.of(context).pop();
-    // }
+    if (context.mounted) {
+      Navigator.of(context).pop();
+
+      debugPrint("$playlistId");
+      Navigator.pushNamed(
+        context,
+        "/playlist",
+        arguments: PlaylistArguments(playlistId),
+      );
+    }
   }
 
   @override

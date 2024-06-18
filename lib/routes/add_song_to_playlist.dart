@@ -2,13 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:music/data/playlist_song_model.dart';
-import 'package:music/data/song_model.dart'; // Import your Song model
+import 'package:music/data/song_model.dart';
 import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:music/data/playlist_model.dart' as playlist_model;
 import 'package:provider/provider.dart';
 
 class AddSongToPlaylist extends StatefulWidget {
-  const AddSongToPlaylist({super.key});
+  final PlaylistArguments args;
+
+  const AddSongToPlaylist({super.key, required this.args});
 
   @override
   State<AddSongToPlaylist> createState() => _AddSongToPlaylistState();

@@ -7,13 +7,14 @@ import 'package:isar/isar.dart';
 import 'package:music/data/playlist_song_model.dart';
 
 class Player extends StatefulWidget {
+  // const Player({super.key});
   const Player({super.key});
 
   @override
-  State<Player> createState() => _PlayerState();
+  State<Player> createState() => PlayerState();
 }
 
-class _PlayerState extends State<Player> {
+class PlayerState extends State<Player> {
   late AudioPlayer _audioPlayer;
 
   @override

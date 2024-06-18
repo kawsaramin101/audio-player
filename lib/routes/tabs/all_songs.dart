@@ -53,8 +53,6 @@ class _AllSongsState extends State<AllSongs> {
       });
     }
 
-    final newPlaylistSongs = <PlaylistSong>[];
-
     for (var file in files) {
       // Check if the song already exists by file path or URL
       var song =
@@ -72,28 +70,9 @@ class _AllSongsState extends State<AllSongs> {
         });
       }
 
-      // Create the PlaylistSong entry
-      var playlistSong = PlaylistSong()
-        ..order = mainPlaylist.songs.length
-        ..playlist.value = mainPlaylist
-        ..song.value = song;
-
-      newPlaylistSongs.add(playlistSong);
+      // Use the createPlaylistSong function to add the song to the playlist
+      await createPlaylistSong(isar, song, mainPlaylist);
     }
-
-    await isar.writeTxn(() async {
-      for (var playlistSong in newPlaylistSongs) {
-        await isar.playlistSongs.put(playlistSong);
-
-        // Link the song to the playlist
-        mainPlaylist!.songs.add(playlistSong);
-        await mainPlaylist.songs.save();
-
-        // Link the playlistSong to the song
-        playlistSong.song.value!.playlists.add(playlistSong);
-        await playlistSong.song.value!.playlists.save();
-      }
-    });
   }
 
   @override
