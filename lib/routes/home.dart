@@ -31,7 +31,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         controller: _tabController,
         tabs: const <Widget>[
           Tab(
-            text: "Home",
+            text: "All songs",
           ),
           Tab(
             text: "Playlists",

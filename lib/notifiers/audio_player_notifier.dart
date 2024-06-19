@@ -1,24 +1,21 @@
 import 'package:flutter/foundation.dart';
+import 'package:music/data/song_model.dart';
 
 class AudioPlayerNotifier extends ChangeNotifier {
-  String? _currentSong;
-  int? _currentSongId;
+  Song? _currentSong;
   int? _currentPlaylistSongId;
   int? _currentPlaylistId;
   bool _isPlaying = false;
 
-  String? get currentSong => _currentSong;
-  int? get currentSongId => _currentSongId;
+  Song? get currentSong => _currentSong;
   int? get currentPlaylistSongId => _currentPlaylistSongId;
   int? get currentPlaylistId => _currentPlaylistId;
   bool get isPlaying => _isPlaying;
 
-  void setSong(
-      int songId, int playlistId, int playlistSongId, String songPath) {
-    _currentSongId = songId;
+  void setSong(Song song, int playlistId, int playlistSongId) {
+    _currentSong = song;
     _currentPlaylistId = playlistId;
     _currentPlaylistSongId = playlistSongId;
-    _currentSong = songPath;
     _isPlaying = true;
     notifyListeners();
   }

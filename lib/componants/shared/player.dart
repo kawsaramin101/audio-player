@@ -8,7 +8,6 @@ import 'package:music/data/playlist_song_model.dart';
 import 'dart:async';
 
 class Player extends StatefulWidget {
-  // const Player({super.key});
   const Player({super.key});
 
   @override
@@ -51,7 +50,7 @@ class PlayerState extends State<Player> {
     super.didChangeDependencies();
     final audioPlayerModel = Provider.of<AudioPlayerNotifier>(context);
     if (audioPlayerModel.currentSong != null && audioPlayerModel.isPlaying) {
-      _playSong(audioPlayerModel.currentSong!);
+      _playSong(audioPlayerModel.currentSong!.filePath!);
     }
   }
 
@@ -85,14 +84,13 @@ class PlayerState extends State<Player> {
 
     await nextPlaylistSong.song.load();
     final nextSong = nextPlaylistSong.song.value;
-    if (nextSong == null) return;
+    if (nextSong == null || nextSong.filePath == null) return;
 
     if (mounted) {
       context.read<AudioPlayerNotifier>().setSong(
-            nextSong.id,
+            nextSong,
             audioPlayerModel.currentPlaylistId!,
             nextPlaylistSong.id,
-            nextSong.filePath!,
           );
     }
 
@@ -116,7 +114,10 @@ class PlayerState extends State<Player> {
               height: 20.0,
               child: audioPlayerModel.currentSong != null
                   ? Marquee(
-                      text: audioPlayerModel.currentSong!.split('/').last,
+                      text: audioPlayerModel.currentSong!.filePath
+                              ?.split('/')
+                              .last ??
+                          'Unknown',
                       style: const TextStyle(fontSize: 13),
                       scrollAxis: Axis.horizontal,
                       velocity: 100.0,
@@ -166,12 +167,20 @@ class PlayerState extends State<Player> {
                                 }
                               },
                             ),
-                          ] else if (audioPlayerModel.currentSong != null) ...[
+                          ] else ...[
                             IconButton(
-                              icon: const Icon(Icons.play_arrow),
-                              onPressed: () async {
-                                _playSong(audioPlayerModel.currentSong!);
-                              },
+                              icon: Icon(
+                                Icons.play_arrow,
+                                color: audioPlayerModel.currentSong == null
+                                    ? Colors.grey
+                                    : null,
+                              ),
+                              onPressed: audioPlayerModel.currentSong == null
+                                  ? null
+                                  : () async {
+                                      _playSong(audioPlayerModel
+                                          .currentSong!.filePath!);
+                                    },
                             ),
                           ],
                           IconButton(

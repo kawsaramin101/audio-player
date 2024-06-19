@@ -28,12 +28,10 @@ class _SongCardState extends State<SongCard> {
     return GestureDetector(
       onTap: () {
         if (widget.song != null) {
-          // Assuming song path is the song file path
           context.read<AudioPlayerNotifier>().setSong(
-                widget.song!.id,
+                widget.song!,
                 widget.playListId!,
                 widget.playlistSongId!,
-                widget.song!.filePath!,
               );
         }
       },
@@ -54,7 +52,7 @@ class _SongCardState extends State<SongCard> {
             height: 20,
             child: _isHovered
                 ? Marquee(
-                    text: widget.song!.filePath!.split('/').last,
+                    text: widget.song!.filePath?.split('/').last ?? 'Unknown',
                     style: const TextStyle(fontSize: 13),
                     scrollAxis: Axis.horizontal,
                     velocity: 100.0,
@@ -62,7 +60,7 @@ class _SongCardState extends State<SongCard> {
                     startAfter: const Duration(milliseconds: 600),
                   )
                 : Text(
-                    widget.song!.filePath!.split('/').last,
+                    widget.song!.filePath?.split('/').last ?? 'Unknown',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 13),
                   ),
