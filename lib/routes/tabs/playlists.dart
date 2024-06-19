@@ -74,6 +74,7 @@ class _PlaylistsState extends State<Playlists> {
         onPressed: () {
           showDialog(
             context: context,
+            useRootNavigator: false,
             builder: (BuildContext context) {
               return const PlaylistNameDialog();
             },

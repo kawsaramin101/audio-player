@@ -39,16 +39,17 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
 
       // await isar.playlists.put(newPlaylist);
       playlistId = await isar.playlists.put(newPlaylist);
-
-      if (context.mounted) {
-        debugPrint("$playlistId");
-        Navigator.pushNamed(
-          context,
-          "/playlist",
-          arguments: PlaylistArguments(playlistId),
-        );
-      }
     });
+
+    if (context.mounted) {
+      Navigator.of(context).pop();
+
+      await Navigator.pushNamed(
+        context,
+        "/playlist",
+        arguments: PlaylistArguments(playlistId),
+      );
+    }
   }
 
   @override

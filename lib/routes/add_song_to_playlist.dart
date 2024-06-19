@@ -68,26 +68,8 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist> {
     final isar = Provider.of<Isar>(context, listen: false);
 
     if (value == true) {
-      // Check if the song is already in the playlist
-      final existingPlaylistSong = await isar.playlistSongs
-          .filter()
-          .playlist((q) => q.idEqualTo(playlistId!))
-          .and()
-          .song((q) => q.idEqualTo(song.id))
-          .findFirst();
-
-      if (existingPlaylistSong == null) {
-        // Add the song to the playlist if not already added
-        await isar.writeTxn(() async {
-          final newPlaylistSong = PlaylistSong()
-            ..playlist.value = playlist
-            ..song.value = song
-            ..order = 0;
-          await isar.playlistSongs.put(newPlaylistSong);
-          await newPlaylistSong.playlist.save();
-          await newPlaylistSong.song.save();
-        });
-      }
+      // Add the song to the playlist if not already added
+      await createPlaylistSong(isar, song, playlist!);
     } else {
       // Remove the song from the playlist if it exists
       await isar.writeTxn(() async {
@@ -119,7 +101,7 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist> {
               itemBuilder: (context, index) {
                 final song = songs[index];
                 return ListTile(
-                  title: Text(song.filePath!),
+                  title: Text(song.filePath!.split('/').last),
                   trailing: Checkbox(
                     value: song.playlists
                         .any((ps) => ps.playlist.value?.id == playlistId),
