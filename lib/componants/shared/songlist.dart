@@ -60,7 +60,7 @@ class _SongListState extends State<SongList> {
       final loadedPlaylistSongs = await isar.playlistSongs
           .filter()
           .playlist((q) => q.idEqualTo(playlist!.id))
-          .sortByOrder()
+          .sortByOrderDesc()
           .findAll();
 
       // Load song details for each playlist song
