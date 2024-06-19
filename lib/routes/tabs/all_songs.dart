@@ -79,9 +79,12 @@ class _AllSongsState extends State<AllSongs> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-          onPressed: pickAndScanFolder,
-          child: const Text('Pick A Folder'),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: pickAndScanFolder,
+            child: const Text('Pick A Folder'),
+          ),
         ),
         const Expanded(
           child: SongList(),

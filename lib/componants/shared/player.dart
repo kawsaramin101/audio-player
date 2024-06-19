@@ -146,7 +146,14 @@ class PlayerState extends State<Player> {
                             icon: const Icon(Icons.skip_previous_rounded),
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              var newPosition =
+                                  _currentPosition - const Duration(seconds: 7);
+                              if (newPosition < Duration.zero) {
+                                newPosition = Duration.zero;
+                              }
+                              _audioPlayer.seek(newPosition);
+                            },
                             icon: const Icon(Icons.fast_rewind_rounded),
                           ),
                           if (audioPlayerModel.isPlaying) ...[
@@ -168,7 +175,14 @@ class PlayerState extends State<Player> {
                             ),
                           ],
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              var newPosition =
+                                  _currentPosition + const Duration(seconds: 7);
+                              if (newPosition > _totalDuration) {
+                                newPosition = _totalDuration;
+                              }
+                              _audioPlayer.seek(newPosition);
+                            },
                             icon: const Icon(Icons.fast_forward_rounded),
                           ),
                           IconButton(
