@@ -26,6 +26,9 @@ void main() async {
   );
 
   // await clearDatabase(isar);
+  // TODO: song should start at the position they were left off
+  // TODO: Implement next song, previous song playing logic
+  // TODO: Implement repeat mode and fetching it from local storage
 
   runApp(
     MultiProvider(
@@ -85,10 +88,10 @@ class MainScreen extends StatelessWidget {
           return MaterialPageRoute(builder: builder, settings: settings);
         },
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.deepPurple[800],
+      bottomNavigationBar: const BottomAppBar(
+        color: Color(0xFF232323),
         height: 90.0,
-        child: const Player(),
+        child: Player(),
       ),
     );
   }

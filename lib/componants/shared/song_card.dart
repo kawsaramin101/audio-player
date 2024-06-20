@@ -32,6 +32,7 @@ class _SongCardState extends State<SongCard> {
                 widget.song!,
                 widget.playListId!,
                 widget.playlistSongId!,
+                true,
               );
         }
       },
