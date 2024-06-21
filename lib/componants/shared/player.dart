@@ -43,10 +43,8 @@ class PlayerState extends State<Player> {
       setState(() {
         _currentPosition = position;
       });
-      // saveDuration();
     });
 
-    // Listen to the total duration of the audio
     _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
         _totalDuration = duration;
@@ -54,17 +52,48 @@ class PlayerState extends State<Player> {
     });
 
     _audioPlayer.onPlayerComplete.listen((event) {
-      _playNextSong();
+      _shouldPlayNextSong();
     });
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription.cancel();
+    _durationSubscription.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final audioPlayerModel = Provider.of<AudioPlayerNotifier>(context);
-    if (audioPlayerModel.currentSong != null && audioPlayerModel.isPlaying) {
-      _playSong(audioPlayerModel.currentSong!.filePath!);
+    if (audioPlayerModel.currentSong != null) {
+      setSong(audioPlayerModel.currentSong!.filePath!);
     }
+
+    if (audioPlayerModel.isPlaying) {
+      _playSong();
+    } else {
+      _pauseSong();
+    }
+  }
+
+  void setSong(String songPath) async {
+    await _audioPlayer.setSource(DeviceFileSource(songPath));
+    _audioPlayer.getDuration().then(
+          (value) => setState(() {
+            _totalDuration = value!;
+          }),
+        );
+  }
+
+  void _playSong() async {
+    await _audioPlayer.resume();
+  }
+
+  void _pauseSong() async {
+    await _audioPlayer.pause();
   }
 
   void saveDuration() async {
@@ -80,11 +109,11 @@ class PlayerState extends State<Player> {
     int? currentSongId = prefs.getInt('currentSongId');
     int? playListId = prefs.getInt("currentPlaylistId");
     int? playlistSongId = prefs.getInt("currentplaylistSongId");
-    String? currentRepeatMode = prefs.getString("repeatMode");
+    int repeatModeIndex = prefs.getInt("repeatMode") ?? 0;
 
-    // setState(() {
-    //   repeatMode = currentRepeatMode as RepeatMode;
-    // });
+    setState(() {
+      repeatMode = RepeatMode.values[repeatModeIndex];
+    });
 
     Song? song = await isar.songs.get(currentSongId!);
 
@@ -111,10 +140,12 @@ class PlayerState extends State<Player> {
     prefs.setInt("currentplaylistSongId", playlistSongId);
   }
 
-  void _playSong(String songPath) async {
-    await _audioPlayer.play(DeviceFileSource(songPath));
-    if (mounted) {
-      context.read<AudioPlayerNotifier>().play();
+  void _shouldPlayNextSong() {
+    if (repeatMode == RepeatMode.noRepeat) {
+      return;
+    } else if (repeatMode == RepeatMode.repeatOne) {
+    } else {
+      _playNextSong();
     }
   }
 
@@ -146,11 +177,12 @@ class PlayerState extends State<Player> {
     if (nextSong == null || nextSong.filePath == null) return;
 
     if (mounted) {
-      context.read<AudioPlayerNotifier>().setSong(nextSong,
-          audioPlayerModel.currentPlaylistId!, nextPlaylistSong.id, true);
+      context.read<AudioPlayerNotifier>().setSong(
+          nextSong,
+          audioPlayerModel.currentPlaylistId!,
+          nextPlaylistSong.id,
+          context.read<AudioPlayerNotifier>().isPlaying);
     }
-
-    await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
   }
 
   void _playPreviousSong() async {
@@ -181,11 +213,14 @@ class PlayerState extends State<Player> {
     if (nextSong == null || nextSong.filePath == null) return;
 
     if (mounted) {
-      context.read<AudioPlayerNotifier>().setSong(nextSong,
-          audioPlayerModel.currentPlaylistId!, nextPlaylistSong.id, true);
+      context.read<AudioPlayerNotifier>().setSong(
+          nextSong,
+          audioPlayerModel.currentPlaylistId!,
+          nextPlaylistSong.id,
+          context.read<AudioPlayerNotifier>().isPlaying);
     }
 
-    await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
+    // await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
   }
 
   String _formatDuration(Duration duration) {
@@ -211,7 +246,7 @@ class PlayerState extends State<Player> {
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    prefs.setString("repeatMode", repeatMode.toString());
+    prefs.setInt("repeatMode", repeatMode.index);
   }
 
   @override
@@ -289,7 +324,6 @@ class PlayerState extends State<Player> {
                             IconButton(
                               icon: const Icon(Icons.pause),
                               onPressed: () async {
-                                await _audioPlayer.pause();
                                 if (context.mounted) {
                                   context.read<AudioPlayerNotifier>().pause();
                                 }
@@ -306,8 +340,9 @@ class PlayerState extends State<Player> {
                               onPressed: audioPlayerModel.currentSong == null
                                   ? null
                                   : () async {
-                                      _playSong(audioPlayerModel
-                                          .currentSong!.filePath!);
+                                      context
+                                          .read<AudioPlayerNotifier>()
+                                          .play();
                                     },
                             ),
                           ],
@@ -345,13 +380,5 @@ class PlayerState extends State<Player> {
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    _positionSubscription.cancel();
-    _durationSubscription.cancel();
-    _audioPlayer.dispose();
-    super.dispose();
   }
 }
