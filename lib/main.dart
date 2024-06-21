@@ -27,6 +27,7 @@ void main() async {
 
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
+  // TODO: fix the debounce for saving duration
   // TODO: Show artist and album name
   // TODO: implement favorite and favorite playlist
   // TODO: implement three dot icon menu
@@ -36,6 +37,7 @@ void main() async {
   // TODO: Custom sorting using drag and drop
   // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
+  //
   runApp(
     MultiProvider(
       providers: [
