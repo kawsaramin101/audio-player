@@ -38,6 +38,7 @@ void main() async {
   // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
   // TODO: show playlist on the player
+  // TODO: implement shuffle
 
   runApp(
     MultiProvider(
