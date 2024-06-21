@@ -37,7 +37,8 @@ void main() async {
   // TODO: Custom sorting using drag and drop
   // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
-  //
+  // TODO: show playlist on the player
+
   runApp(
     MultiProvider(
       providers: [
