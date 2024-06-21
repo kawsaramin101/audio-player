@@ -82,7 +82,9 @@ class _SongListState extends State<SongList> {
           )
         : ListView.separated(
             itemCount: playlistSongs.length,
-            separatorBuilder: (context, index) => const Divider(),
+            separatorBuilder: (context, index) => const Divider(
+              height: 0.0,
+            ),
             itemBuilder: (context, index) {
               final playlistSong = playlistSongs[index];
               final song = playlistSong.song.value;

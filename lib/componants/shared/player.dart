@@ -18,12 +18,6 @@ class Player extends StatefulWidget {
   State<Player> createState() => PlayerState();
 }
 
-enum RepeatMode {
-  noRepeat,
-  repeatOne,
-  repeatAll,
-}
-
 class PlayerState extends State<Player> {
   late AudioPlayer audioPlayer;
   Duration currentPosition = Duration.zero;
@@ -32,6 +26,8 @@ class PlayerState extends State<Player> {
   late StreamSubscription<Duration> durationSubscription;
   RepeatMode repeatMode = RepeatMode.repeatAll;
   bool shuffle = false;
+
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -47,9 +43,7 @@ class PlayerState extends State<Player> {
     });
 
     durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
-      setState(() {
-        totalDuration = duration;
-      });
+      _onPositionChanged(duration);
     });
 
     audioPlayer.onPlayerComplete.listen((event) {
@@ -59,6 +53,7 @@ class PlayerState extends State<Player> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     positionSubscription.cancel();
     durationSubscription.cancel();
     audioPlayer.dispose();
@@ -78,6 +73,17 @@ class PlayerState extends State<Player> {
     } else {
       pauseSong();
     }
+  }
+
+  void _onPositionChanged(Duration position) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(seconds: 1), () {
+      debugPrint("RUn");
+      setState(() {
+        currentPosition = position;
+      });
+      saveDuration();
+    });
   }
 
   void setSong(String songPath) async {
@@ -101,6 +107,9 @@ class PlayerState extends State<Player> {
     if (repeatMode == RepeatMode.noRepeat) {
       return;
     } else if (repeatMode == RepeatMode.repeatOne) {
+      // Play again from begining
+      audioPlayer.seek(Duration.zero);
+      audioPlayer.resume();
     } else {
       playNextSong();
     }
@@ -202,14 +211,14 @@ class PlayerState extends State<Player> {
     if (mounted && playListId != null && playlistSongId != null) {
       context
           .read<AudioPlayerNotifier>()
-          .setSong(song!, playListId, playlistSongId, true);
-      context.read<AudioPlayerNotifier>().pause();
+          .setSong(song!, playListId, playlistSongId, false);
+      // context.read<AudioPlayerNotifier>().pause();
     }
 
     int? seconds = prefs.getInt('currentDuration');
 
     if (seconds != null) {
-      // _audioPlayer.seek(Duration(seconds: seconds));
+      // audioPlayer.seek(Duration(seconds: seconds));
     }
   }
 
@@ -222,7 +231,7 @@ class PlayerState extends State<Player> {
     prefs.setInt("currentplaylistSongId", playlistSongId);
   }
 
-  String _formatDuration(Duration duration) {
+  String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
@@ -373,7 +382,7 @@ class PlayerState extends State<Player> {
                           child: Container(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              "${_formatDuration(currentPosition)}/${_formatDuration(totalDuration)}",
+                              "${formatDuration(currentPosition)}/${formatDuration(totalDuration)}",
                             ),
                           ),
                         ),
@@ -386,4 +395,10 @@ class PlayerState extends State<Player> {
       },
     );
   }
+}
+
+enum RepeatMode {
+  noRepeat,
+  repeatOne,
+  repeatAll,
 }

@@ -16,7 +16,9 @@ class SongCard extends StatefulWidget {
 }
 
 class _SongCardState extends State<SongCard> {
-  bool _isHovered = false;
+  bool isHovered = false;
+  bool isCurrentSong = false;
+  bool isPlaying = false;
 
   @override
   void initState() {
@@ -39,32 +41,76 @@ class _SongCardState extends State<SongCard> {
       child: MouseRegion(
         onEnter: (event) {
           setState(() {
-            _isHovered = true;
+            isHovered = true;
           });
         },
         onExit: (event) {
           setState(() {
-            _isHovered = false;
+            isHovered = false;
           });
         },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
-          child: SizedBox(
-            height: 20,
-            child: _isHovered
-                ? Marquee(
-                    text: widget.song!.filePath?.split('/').last ?? 'Unknown',
-                    style: const TextStyle(fontSize: 13),
-                    scrollAxis: Axis.horizontal,
-                    velocity: 100.0,
-                    blankSpace: 80.0,
-                    startAfter: const Duration(milliseconds: 600),
-                  )
-                : Text(
-                    widget.song!.filePath?.split('/').last ?? 'Unknown',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13),
+        child: Container(
+          color: context.watch<AudioPlayerNotifier>().currentSong!.id ==
+                  widget.song!.id
+              ? const Color(0xFF2A2A2A)
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 16.0, 12.0, 16.0),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  context.watch<AudioPlayerNotifier>().currentSong!.id ==
+                              widget.song!.id &&
+                          context.watch<AudioPlayerNotifier>().isPlaying
+                      ? Icons.graphic_eq_rounded
+                      : Icons.play_circle_outline_rounded,
+                  size: 30.0,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 20,
+                        child: isHovered
+                            ? Marquee(
+                                text: widget.song!.filePath?.split('/').last ??
+                                    'Unknown',
+                                style: const TextStyle(fontSize: 13),
+                                scrollAxis: Axis.horizontal,
+                                velocity: 100.0,
+                                blankSpace: 80.0,
+                                startAfter: const Duration(milliseconds: 600),
+                              )
+                            : Text(
+                                widget.song!.filePath?.split('/').last ??
+                                    'Unknown',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                      ),
+                      const Text(
+                        'Artist Placeholder', // Placeholder text for the artist's name
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.favorite_border),
+                  onPressed: () {
+                    // Handle favorite toggle logic
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {
+                    // Handle more options logic
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
