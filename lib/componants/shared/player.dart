@@ -25,42 +25,43 @@ enum RepeatMode {
 }
 
 class PlayerState extends State<Player> {
-  late AudioPlayer _audioPlayer;
-  Duration _currentPosition = Duration.zero;
-  Duration _totalDuration = Duration.zero;
-  late StreamSubscription<Duration> _positionSubscription;
-  late StreamSubscription<Duration> _durationSubscription;
-  RepeatMode repeatMode = RepeatMode.noRepeat;
+  late AudioPlayer audioPlayer;
+  Duration currentPosition = Duration.zero;
+  Duration totalDuration = Duration.zero;
+  late StreamSubscription<Duration> positionSubscription;
+  late StreamSubscription<Duration> durationSubscription;
+  RepeatMode repeatMode = RepeatMode.repeatAll;
+  bool shuffle = false;
 
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
+    audioPlayer = AudioPlayer();
 
     retrieveSongInfoFromLocalStorage();
 
-    _positionSubscription = _audioPlayer.onPositionChanged.listen((position) {
+    positionSubscription = audioPlayer.onPositionChanged.listen((position) {
       setState(() {
-        _currentPosition = position;
+        currentPosition = position;
       });
     });
 
-    _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
+    durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
-        _totalDuration = duration;
+        totalDuration = duration;
       });
     });
 
-    _audioPlayer.onPlayerComplete.listen((event) {
-      _shouldPlayNextSong();
+    audioPlayer.onPlayerComplete.listen((event) {
+      shouldPlayNextSong();
     });
   }
 
   @override
   void dispose() {
-    _positionSubscription.cancel();
-    _durationSubscription.cancel();
-    _audioPlayer.dispose();
+    positionSubscription.cancel();
+    durationSubscription.cancel();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -73,32 +74,113 @@ class PlayerState extends State<Player> {
     }
 
     if (audioPlayerModel.isPlaying) {
-      _playSong();
+      playSong();
     } else {
-      _pauseSong();
+      pauseSong();
     }
   }
 
   void setSong(String songPath) async {
-    await _audioPlayer.setSource(DeviceFileSource(songPath));
-    _audioPlayer.getDuration().then(
+    await audioPlayer.setSource(DeviceFileSource(songPath));
+    audioPlayer.getDuration().then(
           (value) => setState(() {
-            _totalDuration = value!;
+            totalDuration = value!;
           }),
         );
   }
 
-  void _playSong() async {
-    await _audioPlayer.resume();
+  void playSong() async {
+    await audioPlayer.resume();
   }
 
-  void _pauseSong() async {
-    await _audioPlayer.pause();
+  void pauseSong() async {
+    await audioPlayer.pause();
+  }
+
+  void shouldPlayNextSong() {
+    if (repeatMode == RepeatMode.noRepeat) {
+      return;
+    } else if (repeatMode == RepeatMode.repeatOne) {
+    } else {
+      playNextSong();
+    }
+  }
+
+  void playNextSong() async {
+    final audioPlayerModel =
+        Provider.of<AudioPlayerNotifier>(context, listen: false);
+    if (audioPlayerModel.currentPlaylistId == null ||
+        audioPlayerModel.currentPlaylistSongId == null) return;
+
+    final isar = Provider.of<Isar>(context, listen: false);
+
+    final currentPlaylistSong =
+        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
+
+    if (currentPlaylistSong == null) return;
+
+    final nextPlaylistSong = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+        .and()
+        .orderLessThan(currentPlaylistSong.order)
+        .sortByOrderDesc()
+        .findFirst();
+
+    if (nextPlaylistSong == null) return;
+
+    await nextPlaylistSong.song.load();
+    final nextSong = nextPlaylistSong.song.value;
+    if (nextSong == null || nextSong.filePath == null) return;
+
+    if (mounted) {
+      context.read<AudioPlayerNotifier>().setSong(
+          nextSong,
+          audioPlayerModel.currentPlaylistId!,
+          nextPlaylistSong.id,
+          context.read<AudioPlayerNotifier>().isPlaying);
+    }
+  }
+
+  void playPreviousSong() async {
+    final audioPlayerModel =
+        Provider.of<AudioPlayerNotifier>(context, listen: false);
+    if (audioPlayerModel.currentPlaylistId == null ||
+        audioPlayerModel.currentPlaylistSongId == null) return;
+
+    final isar = Provider.of<Isar>(context, listen: false);
+
+    final currentPlaylistSong =
+        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
+
+    if (currentPlaylistSong == null) return;
+
+    final nextPlaylistSong = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+        .and()
+        .orderGreaterThan(currentPlaylistSong.order)
+        .sortByOrder()
+        .findFirst();
+
+    if (nextPlaylistSong == null) return;
+
+    await nextPlaylistSong.song.load();
+    final nextSong = nextPlaylistSong.song.value;
+    if (nextSong == null || nextSong.filePath == null) return;
+
+    if (mounted) {
+      context.read<AudioPlayerNotifier>().setSong(
+          nextSong,
+          audioPlayerModel.currentPlaylistId!,
+          nextPlaylistSong.id,
+          context.read<AudioPlayerNotifier>().isPlaying);
+    }
   }
 
   void saveDuration() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("currentDuration", _currentPosition.inSeconds);
+    await prefs.setInt("currentDuration", currentPosition.inSeconds);
   }
 
   void retrieveSongInfoFromLocalStorage() async {
@@ -140,89 +222,6 @@ class PlayerState extends State<Player> {
     prefs.setInt("currentplaylistSongId", playlistSongId);
   }
 
-  void _shouldPlayNextSong() {
-    if (repeatMode == RepeatMode.noRepeat) {
-      return;
-    } else if (repeatMode == RepeatMode.repeatOne) {
-    } else {
-      _playNextSong();
-    }
-  }
-
-  void _playNextSong() async {
-    final audioPlayerModel =
-        Provider.of<AudioPlayerNotifier>(context, listen: false);
-    if (audioPlayerModel.currentPlaylistId == null ||
-        audioPlayerModel.currentPlaylistSongId == null) return;
-
-    final isar = Provider.of<Isar>(context, listen: false);
-
-    final currentPlaylistSong =
-        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
-
-    if (currentPlaylistSong == null) return;
-
-    final nextPlaylistSong = await isar.playlistSongs
-        .filter()
-        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
-        .and()
-        .orderLessThan(currentPlaylistSong.order)
-        .sortByOrderDesc()
-        .findFirst();
-
-    if (nextPlaylistSong == null) return;
-
-    await nextPlaylistSong.song.load();
-    final nextSong = nextPlaylistSong.song.value;
-    if (nextSong == null || nextSong.filePath == null) return;
-
-    if (mounted) {
-      context.read<AudioPlayerNotifier>().setSong(
-          nextSong,
-          audioPlayerModel.currentPlaylistId!,
-          nextPlaylistSong.id,
-          context.read<AudioPlayerNotifier>().isPlaying);
-    }
-  }
-
-  void _playPreviousSong() async {
-    final audioPlayerModel =
-        Provider.of<AudioPlayerNotifier>(context, listen: false);
-    if (audioPlayerModel.currentPlaylistId == null ||
-        audioPlayerModel.currentPlaylistSongId == null) return;
-
-    final isar = Provider.of<Isar>(context, listen: false);
-
-    final currentPlaylistSong =
-        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
-
-    if (currentPlaylistSong == null) return;
-
-    final nextPlaylistSong = await isar.playlistSongs
-        .filter()
-        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
-        .and()
-        .orderGreaterThan(currentPlaylistSong.order)
-        .sortByOrder()
-        .findFirst();
-
-    if (nextPlaylistSong == null) return;
-
-    await nextPlaylistSong.song.load();
-    final nextSong = nextPlaylistSong.song.value;
-    if (nextSong == null || nextSong.filePath == null) return;
-
-    if (mounted) {
-      context.read<AudioPlayerNotifier>().setSong(
-          nextSong,
-          audioPlayerModel.currentPlaylistId!,
-          nextPlaylistSong.id,
-          context.read<AudioPlayerNotifier>().isPlaying);
-    }
-
-    // await _audioPlayer.play(DeviceFileSource(nextSong.filePath!));
-  }
-
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -230,7 +229,7 @@ class PlayerState extends State<Player> {
     return "$minutes:$seconds";
   }
 
-  void _toggleRepeatMode() async {
+  void toggleRepeatMode() async {
     setState(() {
       switch (repeatMode) {
         case RepeatMode.noRepeat:
@@ -282,7 +281,13 @@ class PlayerState extends State<Player> {
                         child: Row(
                           children: [
                             IconButton(
-                              onPressed: _toggleRepeatMode,
+                              onPressed: () {},
+                              icon: shuffle
+                                  ? const Icon(Icons.shuffle_on_rounded)
+                                  : const Icon(Icons.shuffle_rounded),
+                            ),
+                            IconButton(
+                              onPressed: toggleRepeatMode,
                               icon: Icon(
                                 () {
                                   switch (repeatMode) {
@@ -306,17 +311,17 @@ class PlayerState extends State<Player> {
                             .min, // Ensures the row takes up minimal space
                         children: [
                           IconButton(
-                            onPressed: _playPreviousSong,
+                            onPressed: playPreviousSong,
                             icon: const Icon(Icons.skip_previous_rounded),
                           ),
                           IconButton(
                             onPressed: () {
                               var newPosition =
-                                  _currentPosition - const Duration(seconds: 7);
+                                  currentPosition - const Duration(seconds: 7);
                               if (newPosition < Duration.zero) {
                                 newPosition = Duration.zero;
                               }
-                              _audioPlayer.seek(newPosition);
+                              audioPlayer.seek(newPosition);
                             },
                             icon: const Icon(Icons.fast_rewind_rounded),
                           ),
@@ -349,16 +354,16 @@ class PlayerState extends State<Player> {
                           IconButton(
                             onPressed: () {
                               var newPosition =
-                                  _currentPosition + const Duration(seconds: 7);
-                              if (newPosition > _totalDuration) {
-                                newPosition = _totalDuration;
+                                  currentPosition + const Duration(seconds: 7);
+                              if (newPosition > totalDuration) {
+                                newPosition = totalDuration;
                               }
-                              _audioPlayer.seek(newPosition);
+                              audioPlayer.seek(newPosition);
                             },
                             icon: const Icon(Icons.fast_forward_rounded),
                           ),
                           IconButton(
-                            onPressed: _playNextSong,
+                            onPressed: playNextSong,
                             icon: const Icon(Icons.skip_next_rounded),
                           ),
                         ],
@@ -368,7 +373,7 @@ class PlayerState extends State<Player> {
                           child: Container(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              "${_formatDuration(_currentPosition)}/${_formatDuration(_totalDuration)}",
+                              "${_formatDuration(currentPosition)}/${_formatDuration(totalDuration)}",
                             ),
                           ),
                         ),

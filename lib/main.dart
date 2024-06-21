@@ -27,8 +27,6 @@ void main() async {
 
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
-  // TODO: Implement next song, previous song playing logic
-  // TODO: Implement repeat mode and fetching it from local storage
 
   runApp(
     MultiProvider(
