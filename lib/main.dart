@@ -27,6 +27,13 @@ void main() async {
 
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
+  // TODO: Show artist and album name
+  // TODO: implement favorite and favorite playlist
+  // TODO: implement three dot icon menu
+  // TODO: Songlist should scroll to position of the song playing
+  // TODO: improve playlist list
+  // TODO: Song sorting by date, name
+  // TODO: Custom sorting using drag and drop
 
   runApp(
     MultiProvider(

@@ -84,6 +84,7 @@ class _SongListState extends State<SongList> {
             itemCount: playlistSongs.length,
             separatorBuilder: (context, index) => const Divider(
               height: 0.0,
+              thickness: 2.0,
             ),
             itemBuilder: (context, index) {
               final playlistSong = playlistSongs[index];

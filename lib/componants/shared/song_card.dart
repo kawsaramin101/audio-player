@@ -30,12 +30,21 @@ class _SongCardState extends State<SongCard> {
     return GestureDetector(
       onTap: () {
         if (widget.song != null) {
-          context.read<AudioPlayerNotifier>().setSong(
-                widget.song!,
-                widget.playListId!,
-                widget.playlistSongId!,
-                true,
-              );
+          if (context.read<AudioPlayerNotifier>().currentSong!.id ==
+              widget.song!.id) {
+            if (context.read<AudioPlayerNotifier>().isPlaying) {
+              context.read<AudioPlayerNotifier>().pause();
+            } else {
+              context.read<AudioPlayerNotifier>().play();
+            }
+          } else {
+            context.read<AudioPlayerNotifier>().setSong(
+                  widget.song!,
+                  widget.playListId!,
+                  widget.playlistSongId!,
+                  true,
+                );
+          }
         }
       },
       child: MouseRegion(
@@ -91,11 +100,14 @@ class _SongCardState extends State<SongCard> {
                               ),
                       ),
                       const Text(
-                        'Artist Placeholder', // Placeholder text for the artist's name
+                        'Unknown Album . Unknown Artist',
                         style: TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(
+                  width: 8.0,
                 ),
                 IconButton(
                   icon: const Icon(Icons.favorite_border),
