@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 import 'package:marquee/marquee.dart';
+import 'package:music/data/playlist_model.dart';
+import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
@@ -19,10 +22,43 @@ class _SongCardState extends State<SongCard> {
   bool isHovered = false;
   bool isCurrentSong = false;
   bool isPlaying = false;
+  bool isFavourite = false;
 
   @override
   void initState() {
     super.initState();
+
+    setFavouriteState();
+  }
+
+  void setFavouriteState() async {
+    await widget.song!.playlists.load();
+
+    if (widget.song!.playlists
+        .any((playlistSong) => playlistSong.playlist.value?.id == 2)) {
+      setState(() {
+        isFavourite = true;
+      });
+    }
+  }
+
+  void addToFavourite() async {
+    final isar = Provider.of<Isar>(context, listen: false);
+
+    if (isFavourite) {
+      // Remove from playlist
+      await deletePlaylistSong(isar, widget.song!, 2);
+    } else {
+      final playlist = await isar.playlists.get(2);
+      if (playlist != null) {
+        await createPlaylistSong(isar, widget.song!, playlist);
+        // await widget.song!.playlists.load();
+      }
+    }
+
+    setState(() {
+      isFavourite = !isFavourite;
+    });
   }
 
   @override
@@ -118,10 +154,13 @@ class _SongCardState extends State<SongCard> {
                 if (widget.playListId == 1)
                   // add favourite button only for All songs list
                   IconButton(
-                    icon: const Icon(Icons.favorite_border),
-                    onPressed: () {
-                      // Handle favorite toggle logic
-                    },
+                    icon: isFavourite
+                        ? const Icon(
+                            Icons.favorite_rounded,
+                            color: Colors.pink,
+                          )
+                        : const Icon(Icons.favorite_border),
+                    onPressed: addToFavourite,
                   ),
                 IconButton(
                   icon: const Icon(Icons.more_vert),

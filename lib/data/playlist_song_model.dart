@@ -49,3 +49,19 @@ Future<void> createPlaylistSong(Isar isar, Song song, Playlist playlist) async {
     await newPlaylistSong.song.save();
   });
 }
+
+Future<void> deletePlaylistSong(Isar isar, Song song, int playlistId) async {
+  await isar.writeTxn(() async {
+    final playlistSong = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(playlistId))
+        .and()
+        .song((q) => q.idEqualTo(song.id))
+        .findFirst();
+
+    if (playlistSong != null) {
+      await isar.playlistSongs.delete(playlistSong.id);
+      await playlistSong.playlist.save();
+    }
+  });
+}

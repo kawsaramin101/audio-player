@@ -72,19 +72,7 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist> {
       await createPlaylistSong(isar, song, playlist!);
     } else {
       // Remove the song from the playlist if it exists
-      await isar.writeTxn(() async {
-        final playlistSong = await isar.playlistSongs
-            .filter()
-            .playlist((q) => q.idEqualTo(playlistId!))
-            .and()
-            .song((q) => q.idEqualTo(song.id))
-            .findFirst();
-
-        if (playlistSong != null) {
-          await isar.playlistSongs.delete(playlistSong.id);
-          await playlistSong.playlist.save(); // Save playlist after deletion
-        }
-      });
+      await deletePlaylistSong(isar, song, playlist!.id);
     }
   }
 

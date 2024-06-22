@@ -32,7 +32,6 @@ void main() async {
   // TODO: play the playlist from start when it ends
   // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: Show artist and album name
-  // TODO: implement favorite and favorite playlist
   // TODO: implement three dot icon menu
   // TODO: Songlist should scroll to position of the song playing
   // TODO: improve playlist list, add three dot menu
