@@ -47,9 +47,27 @@ class _AllSongsState extends State<AllSongs> {
     if (mainPlaylist == null) {
       mainPlaylist = Playlist()
         ..name = 'main'
+        ..order = 1
         ..type = PlaylistType.main;
       await isar.writeTxn(() async {
         await isar.playlists.put(mainPlaylist!);
+      });
+    }
+
+    // Create a favourite Playlist if it doesn't exist
+
+    var favouritePlaylist = await isar.playlists
+        .filter()
+        .typeEqualTo(PlaylistType.favorite)
+        .findFirst();
+
+    if (favouritePlaylist == null) {
+      favouritePlaylist = Playlist()
+        ..name = 'Favorites'
+        ..order = 2
+        ..type = PlaylistType.favorite;
+      await isar.writeTxn(() async {
+        await isar.playlists.put(favouritePlaylist!);
       });
     }
 

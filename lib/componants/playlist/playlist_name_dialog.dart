@@ -33,11 +33,14 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
 
     int playlistId = 0;
     await isar.writeTxn(() async {
+      final playlistWithHighestOrder =
+          await isar.playlists.where().sortByOrderDesc().findFirst();
+
       final newPlaylist = Playlist()
         ..name = name
+        ..order = (playlistWithHighestOrder?.order ?? 0) + 1
         ..type = type;
 
-      // await isar.playlists.put(newPlaylist);
       playlistId = await isar.playlists.put(newPlaylist);
     });
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
@@ -21,16 +23,18 @@ class _PlaylistsState extends State<Playlists> {
     setupPlaylistStream();
   }
 
-  void setupPlaylistStream() {
+  void setupPlaylistStream() async {
     final isar = Provider.of<Isar>(context, listen: false);
 
     playlistStream = isar.playlists
-        .where(sort: Sort.desc)
-        .anyId()
+        .where()
         .filter()
         .typeEqualTo(PlaylistType.local)
         .or()
         .typeEqualTo(PlaylistType.youtube)
+        .or()
+        .typeEqualTo(PlaylistType.favorite)
+        .sortByOrder()
         .watch(fireImmediately: true);
   }
 
@@ -50,19 +54,51 @@ class _PlaylistsState extends State<Playlists> {
             final playlists = snapshot.data!;
             return ListView.separated(
               itemCount: playlists.length,
-              separatorBuilder: (context, index) => const Divider(),
+              separatorBuilder: (context, index) => const Divider(
+                height: 0.0,
+                thickness: 2.0,
+              ),
               itemBuilder: (context, index) {
                 final playlist = playlists[index];
+
                 return ListTile(
+                  leading: const Icon(
+                    Icons.playlist_play_rounded,
+                    size: 50,
+                  ),
                   title: Text(playlist.name),
-                  subtitle: Text(
-                      'Type: ${playlist.type == PlaylistType.local ? "Local" : "Youtube"}'),
+                  subtitle: FutureBuilder<int>(
+                    future: playlist.songs.count(),
+                    builder: (context, countSnapshot) {
+                      if (countSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Text('Loading...');
+                      } else if (countSnapshot.hasError) {
+                        return const Text('Error loading song count');
+                      } else if (countSnapshot.hasData) {
+                        return Text('Total songs: ${countSnapshot.data}');
+                      } else {
+                        return const Text('Total songs: 0');
+                      }
+                    },
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      // Add your onPressed code here
+                    },
+                  ),
                   onTap: () {
                     Navigator.pushNamed(
                       context,
                       '/playlist',
                       arguments: PlaylistArguments(playlist.id),
-                    );
+                    ).then((_) {
+                      // Ensure the stream updates when returning from the playlist detail
+                      setState(() {
+                        setupPlaylistStream();
+                      });
+                    });
                   },
                 );
               },
@@ -78,7 +114,12 @@ class _PlaylistsState extends State<Playlists> {
             builder: (BuildContext context) {
               return const PlaylistNameDialog();
             },
-          );
+          ).then((_) {
+            // Ensure the stream updates when a new playlist is added
+            setState(() {
+              setupPlaylistStream();
+            });
+          });
         },
         child: const Icon(Icons.add),
       ),

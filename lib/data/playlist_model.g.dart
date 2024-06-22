@@ -22,8 +22,13 @@ const PlaylistSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'type': PropertySchema(
+    r'order': PropertySchema(
       id: 1,
+      name: r'order',
+      type: IsarType.long,
+    ),
+    r'type': PropertySchema(
+      id: 2,
       name: r'type',
       type: IsarType.byte,
       enumMap: _PlaylisttypeEnumValueMap,
@@ -68,7 +73,8 @@ void _playlistSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.name);
-  writer.writeByte(offsets[1], object.type.index);
+  writer.writeLong(offsets[1], object.order);
+  writer.writeByte(offsets[2], object.type.index);
 }
 
 Playlist _playlistDeserialize(
@@ -80,7 +86,8 @@ Playlist _playlistDeserialize(
   final object = Playlist();
   object.id = id;
   object.name = reader.readString(offsets[0]);
-  object.type = _PlaylisttypeValueEnumMap[reader.readByteOrNull(offsets[1])] ??
+  object.order = reader.readLong(offsets[1]);
+  object.type = _PlaylisttypeValueEnumMap[reader.readByteOrNull(offsets[2])] ??
       PlaylistType.main;
   return object;
 }
@@ -95,6 +102,8 @@ P _playlistDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
+      return (reader.readLong(offset)) as P;
+    case 2:
       return (_PlaylisttypeValueEnumMap[reader.readByteOrNull(offset)] ??
           PlaylistType.main) as P;
     default:
@@ -106,11 +115,13 @@ const _PlaylisttypeEnumValueMap = {
   'main': 0,
   'local': 1,
   'youtube': 2,
+  'favorite': 3,
 };
 const _PlaylisttypeValueEnumMap = {
   0: PlaylistType.main,
   1: PlaylistType.local,
   2: PlaylistType.youtube,
+  3: PlaylistType.favorite,
 };
 
 Id _playlistGetId(Playlist object) {
@@ -385,6 +396,59 @@ extension PlaylistQueryFilter
     });
   }
 
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> orderEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> orderGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> orderLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> orderBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'order',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Playlist, Playlist, QAfterFilterCondition> typeEqualTo(
       PlaylistType value) {
     return QueryBuilder.apply(this, (query) {
@@ -515,6 +579,18 @@ extension PlaylistQuerySortBy on QueryBuilder<Playlist, Playlist, QSortBy> {
     });
   }
 
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
@@ -554,6 +630,18 @@ extension PlaylistQuerySortThenBy
     });
   }
 
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
@@ -576,6 +664,12 @@ extension PlaylistQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Playlist, Playlist, QDistinct> distinctByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'order');
+    });
+  }
+
   QueryBuilder<Playlist, Playlist, QDistinct> distinctByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'type');
@@ -594,6 +688,12 @@ extension PlaylistQueryProperty
   QueryBuilder<Playlist, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<Playlist, int, QQueryOperations> orderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'order');
     });
   }
 

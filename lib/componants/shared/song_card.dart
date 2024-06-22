@@ -30,8 +30,9 @@ class _SongCardState extends State<SongCard> {
     return GestureDetector(
       onTap: () {
         if (widget.song != null) {
-          if (context.read<AudioPlayerNotifier>().currentSong!.id ==
-              widget.song!.id) {
+          if (context.read<AudioPlayerNotifier>().currentSong != null &&
+              context.read<AudioPlayerNotifier>().currentSong!.id ==
+                  widget.song!.id) {
             if (context.read<AudioPlayerNotifier>().isPlaying) {
               context.read<AudioPlayerNotifier>().pause();
             } else {
@@ -59,8 +60,9 @@ class _SongCardState extends State<SongCard> {
           });
         },
         child: Container(
-          color: context.watch<AudioPlayerNotifier>().currentSong!.id ==
-                  widget.song!.id
+          color: context.watch<AudioPlayerNotifier>().currentSong != null &&
+                  context.watch<AudioPlayerNotifier>().currentSong!.id ==
+                      widget.song!.id
               ? const Color(0xFF2A2A2A)
               : null,
           child: Padding(
@@ -68,7 +70,11 @@ class _SongCardState extends State<SongCard> {
             child: Row(
               children: <Widget>[
                 Icon(
-                  context.watch<AudioPlayerNotifier>().currentSong!.id ==
+                  context.watch<AudioPlayerNotifier>().currentSong != null &&
+                          context
+                                  .watch<AudioPlayerNotifier>()
+                                  .currentSong!
+                                  .id ==
                               widget.song!.id &&
                           context.watch<AudioPlayerNotifier>().isPlaying
                       ? Icons.graphic_eq_rounded
@@ -109,12 +115,14 @@ class _SongCardState extends State<SongCard> {
                 const SizedBox(
                   width: 8.0,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.favorite_border),
-                  onPressed: () {
-                    // Handle favorite toggle logic
-                  },
-                ),
+                if (widget.playListId == 1)
+                  // add favourite button only for All songs list
+                  IconButton(
+                    icon: const Icon(Icons.favorite_border),
+                    onPressed: () {
+                      // Handle favorite toggle logic
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () {

@@ -8,6 +8,7 @@ class Playlist {
   Id id = Isar.autoIncrement;
 
   late String name;
+  late int order;
 
   @enumerated
   late PlaylistType type;
@@ -20,4 +21,5 @@ enum PlaylistType {
   main,
   local,
   youtube,
+  favorite,
 }

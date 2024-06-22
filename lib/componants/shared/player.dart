@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music/data/playlist_model.dart';
@@ -7,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:isar/isar.dart';
 import 'package:music/data/playlist_song_model.dart';
-import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +28,7 @@ class PlayerState extends State<Player> {
   RepeatMode repeatMode = RepeatMode.repeatAll;
   bool shuffle = false;
 
-  Timer? _debounce;
+  Timer? debounce;
 
   @override
   void initState() {
@@ -37,13 +38,13 @@ class PlayerState extends State<Player> {
     retrieveSongInfoFromLocalStorage();
 
     positionSubscription = audioPlayer.onPositionChanged.listen((position) {
-      setState(() {
-        currentPosition = position;
-      });
+      onPositionChanged(position);
     });
 
     durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
-      _onPositionChanged(duration);
+      setState(() {
+        totalDuration = duration;
+      });
     });
 
     audioPlayer.onPlayerComplete.listen((event) {
@@ -53,7 +54,7 @@ class PlayerState extends State<Player> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    debounce?.cancel();
     positionSubscription.cancel();
     durationSubscription.cancel();
     audioPlayer.dispose();
@@ -75,15 +76,17 @@ class PlayerState extends State<Player> {
     }
   }
 
-  void _onPositionChanged(Duration position) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(seconds: 1), () {
-      debugPrint("RUn");
-      setState(() {
-        currentPosition = position;
-      });
-      saveDuration();
+  void onPositionChanged(Duration position) {
+    setState(() {
+      currentPosition = position;
     });
+
+    if (debounce == null || !debounce!.isActive) {
+      debounce = Timer(const Duration(seconds: 1), () {
+        saveDuration();
+        debounce = null;
+      });
+    }
   }
 
   void setSong(String songPath) async {
@@ -208,17 +211,19 @@ class PlayerState extends State<Player> {
 
     Song? song = await isar.songs.get(currentSongId!);
 
-    if (mounted && playListId != null && playlistSongId != null) {
+    if (mounted &&
+        song != null &&
+        playListId != null &&
+        playlistSongId != null) {
       context
           .read<AudioPlayerNotifier>()
-          .setSong(song!, playListId, playlistSongId, false);
-      // context.read<AudioPlayerNotifier>().pause();
-    }
+          .setSong(song, playListId, playlistSongId, true);
+      int? seconds = prefs.getInt('currentDuration');
 
-    int? seconds = prefs.getInt('currentDuration');
-
-    if (seconds != null) {
-      // audioPlayer.seek(Duration(seconds: seconds));
+      if (seconds != null) {
+        // audioPlayer.seek(Duration(seconds: seconds));
+      }
+      context.read<AudioPlayerNotifier>().pause();
     }
   }
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music/componants/shared/player.dart';
 import 'package:music/data/playlist_song_model.dart';
-import 'package:music/routes/add_song_to_playlist.dart';
-import 'package:music/routes/route_arguments/playlist_arguments.dart';
 
 import 'package:provider/provider.dart';
 import 'package:isar/isar.dart';
@@ -12,6 +10,8 @@ import 'package:music/notifiers/audio_player_notifier.dart';
 
 import 'package:music/routes/home.dart';
 import 'package:music/routes/playlist.dart' as playlist_route;
+import 'package:music/routes/add_song_to_playlist.dart';
+import 'package:music/routes/route_arguments/playlist_arguments.dart';
 
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/song_model.dart';
@@ -28,17 +28,25 @@ void main() async {
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
   // TODO: fix the debounce for saving duration
+  // TODO: All songs reload when go to all songs tab, fix it
+  // TODO: play the playlist from start when it ends
+  // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: Show artist and album name
   // TODO: implement favorite and favorite playlist
   // TODO: implement three dot icon menu
   // TODO: Songlist should scroll to position of the song playing
-  // TODO: improve playlist list
+  // TODO: improve playlist list, add three dot menu
+  // TODO: playing status in playlist
   // TODO: Song sorting by date, name
   // TODO: Custom sorting using drag and drop
   // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
   // TODO: show playlist on the player
   // TODO: implement shuffle
+  // TODO: implement keyboard shortcuts
+  //       - spacebar to pause and play
+  //       - arrow right next song, arrow left previous song
+  //       - arrow up go back 7 seconds, arrow down skip 7 seconds
 
   runApp(
     MultiProvider(
