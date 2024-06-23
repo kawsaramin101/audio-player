@@ -162,11 +162,41 @@ class _SongCardState extends State<SongCard> {
                         : const Icon(Icons.favorite_border),
                     onPressed: addToFavourite,
                   ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {
-                    // Handle more options logic
+                PopupMenuButton<String>(
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      const PopupMenuItem<String>(
+                        value: 'Option 1',
+                        child: ListTile(
+                          leading: Icon(Icons.info),
+                          title: Text('Option 1'),
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'Option 2',
+                        child: ListTile(
+                          leading: Icon(Icons.help),
+                          title: Text('Option 2'),
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'Option 3',
+                        child: ListTile(
+                          leading: Icon(Icons.settings),
+                          title: Text('Option 3'),
+                        ),
+                      ),
+                      PopupMenuDivider(),
+                      PopupMenuItem<String>(
+                        value: 'Close',
+                        child: ListTile(
+                          leading: Icon(Icons.close),
+                          title: Text('Close'),
+                        ),
+                      ),
+                    ];
                   },
+                  icon: Icon(Icons.more_vert), // Three dots icon
                 ),
               ],
             ),

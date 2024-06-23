@@ -27,9 +27,6 @@ void main() async {
 
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
-  // TODO: fix the debounce for saving duration
-  // TODO: All songs reload when go to all songs tab, fix it
-  // TODO: play the playlist from start when it ends
   // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: Show artist and album name
   // TODO: implement three dot icon menu

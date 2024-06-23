@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:music/componants/playlist/playlist_name_dialog.dart';
 import 'package:music/data/playlist_model.dart';
@@ -61,45 +62,61 @@ class _PlaylistsState extends State<Playlists> {
               itemBuilder: (context, index) {
                 final playlist = playlists[index];
 
-                return ListTile(
-                  leading: const Icon(
-                    Icons.playlist_play_rounded,
-                    size: 50,
-                  ),
-                  title: Text(playlist.name),
-                  subtitle: FutureBuilder<int>(
-                    future: playlist.songs.count(),
-                    builder: (context, countSnapshot) {
-                      if (countSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Text('Loading...');
-                      } else if (countSnapshot.hasError) {
-                        return const Text('Error loading song count');
-                      } else if (countSnapshot.hasData) {
-                        return Text('Total songs: ${countSnapshot.data}');
-                      } else {
-                        return const Text('Total songs: 0');
-                      }
-                    },
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () {
-                      // Add your onPressed code here
-                    },
-                  ),
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/playlist',
-                      arguments: PlaylistArguments(playlist.id),
-                    ).then((_) {
-                      // Ensure the stream updates when returning from the playlist detail
-                      setState(() {
-                        setupPlaylistStream();
+                return Container(
+                  color:
+                      context.watch<AudioPlayerNotifier>().currentPlaylistId !=
+                                  null &&
+                              context
+                                      .watch<AudioPlayerNotifier>()
+                                      .currentPlaylistId! ==
+                                  playlist.id
+                          ? const Color(0xFF2A2A2A)
+                          : null,
+                  child: ListTile(
+                    leading: playlist.type == PlaylistType.favorite
+                        ? const Icon(
+                            Icons.favorite_rounded,
+                            size: 40,
+                          )
+                        : const Icon(
+                            Icons.playlist_play_rounded,
+                            size: 50,
+                          ),
+                    title: Text(playlist.name),
+                    subtitle: FutureBuilder<int>(
+                      future: playlist.songs.count(),
+                      builder: (context, countSnapshot) {
+                        if (countSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text('Loading...');
+                        } else if (countSnapshot.hasError) {
+                          return const Text('Error loading song count');
+                        } else if (countSnapshot.hasData) {
+                          return Text('Total songs: ${countSnapshot.data}');
+                        } else {
+                          return const Text('Total songs: 0');
+                        }
+                      },
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () {
+                        // Add your onPressed code here
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/playlist',
+                        arguments: PlaylistArguments(playlist.id),
+                      ).then((_) {
+                        // Ensure the stream updates when returning from the playlist detail
+                        setState(() {
+                          setupPlaylistStream();
+                        });
                       });
-                    });
-                  },
+                    },
+                  ),
                 );
               },
             );

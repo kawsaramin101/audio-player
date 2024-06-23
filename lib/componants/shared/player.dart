@@ -131,7 +131,7 @@ class PlayerState extends State<Player> {
 
     if (currentPlaylistSong == null) return;
 
-    final nextPlaylistSong = await isar.playlistSongs
+    var nextPlaylistSong = await isar.playlistSongs
         .filter()
         .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
         .and()
@@ -139,9 +139,14 @@ class PlayerState extends State<Player> {
         .sortByOrderDesc()
         .findFirst();
 
-    if (nextPlaylistSong == null) return;
+    // Get the first song if nextsong is not found
+    nextPlaylistSong ??= await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+        .sortByOrderDesc()
+        .findFirst();
 
-    await nextPlaylistSong.song.load();
+    await nextPlaylistSong!.song.load();
     final nextSong = nextPlaylistSong.song.value;
     if (nextSong == null || nextSong.filePath == null) return;
 
