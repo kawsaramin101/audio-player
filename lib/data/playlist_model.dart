@@ -20,6 +20,5 @@ class Playlist {
 enum PlaylistType {
   main,
   local,
-  youtube,
   favorite,
 }

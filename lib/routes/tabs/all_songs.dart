@@ -78,9 +78,11 @@ class _AllSongsState extends State<AllSongs> {
 
       if (song == null) {
         // If the song doesn't exist, create it
+
         song = Song()
           ..filePath = file.path
-          ..url = null
+          ..albumname = null
+          ..artistname = null
           ..length = await file
               .length(); // You might need to calculate the length differently
         await isar.writeTxn(() async {

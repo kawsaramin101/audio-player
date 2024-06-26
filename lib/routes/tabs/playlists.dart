@@ -32,8 +32,6 @@ class _PlaylistsState extends State<Playlists> {
         .filter()
         .typeEqualTo(PlaylistType.local)
         .or()
-        .typeEqualTo(PlaylistType.youtube)
-        .or()
         .typeEqualTo(PlaylistType.favorite)
         .sortByOrder()
         .watch(fireImmediately: true);
@@ -131,12 +129,7 @@ class _PlaylistsState extends State<Playlists> {
             builder: (BuildContext context) {
               return const PlaylistNameDialog();
             },
-          ).then((_) {
-            // Ensure the stream updates when a new playlist is added
-            setState(() {
-              setupPlaylistStream();
-            });
-          });
+          );
         },
         child: const Icon(Icons.add),
       ),

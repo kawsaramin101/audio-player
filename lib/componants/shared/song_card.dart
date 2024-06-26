@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:marquee/marquee.dart';
+import 'package:music/componants/playlist/details_dialog.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
@@ -59,6 +60,11 @@ class _SongCardState extends State<SongCard> {
     setState(() {
       isFavourite = !isFavourite;
     });
+  }
+
+  void _deletePlaylistSong(Song song, int playlistId) {
+    final isar = Provider.of<Isar>(context, listen: false);
+    deletePlaylistSong(isar, song, playlistId);
   }
 
   @override
@@ -138,7 +144,9 @@ class _SongCardState extends State<SongCard> {
                                 widget.song!.filePath?.split('/').last ??
                                     'Unknown',
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                ),
                               ),
                       ),
                       const Text(
@@ -166,37 +174,55 @@ class _SongCardState extends State<SongCard> {
                   itemBuilder: (BuildContext context) {
                     return [
                       const PopupMenuItem<String>(
-                        value: 'Option 1',
+                        value: 'Details',
                         child: ListTile(
-                          leading: Icon(Icons.info),
-                          title: Text('Option 1'),
+                          leading: Icon(Icons.info_outline_rounded),
+                          title: Text('Details'),
                         ),
                       ),
-                      PopupMenuItem<String>(
-                        value: 'Option 2',
+                      const PopupMenuItem<String>(
+                        value: 'Remove',
                         child: ListTile(
-                          leading: Icon(Icons.help),
-                          title: Text('Option 2'),
+                          leading: Icon(Icons.delete_outline_rounded),
+                          title: Text('Remove'),
                         ),
                       ),
-                      PopupMenuItem<String>(
-                        value: 'Option 3',
+                      const PopupMenuItem<String>(
+                        value: 'Delete',
                         child: ListTile(
-                          leading: Icon(Icons.settings),
-                          title: Text('Option 3'),
+                          leading: Icon(Icons.delete_rounded),
+                          title: Text('Delete'),
                         ),
                       ),
-                      PopupMenuDivider(),
-                      PopupMenuItem<String>(
+                      const PopupMenuDivider(),
+                      const PopupMenuItem<String>(
                         value: 'Close',
                         child: ListTile(
-                          leading: Icon(Icons.close),
+                          leading: Icon(Icons.close_rounded),
                           title: Text('Close'),
                         ),
                       ),
                     ];
                   },
-                  icon: Icon(Icons.more_vert), // Three dots icon
+                  onSelected: (String value) {
+                    switch (value) {
+                      case 'Remove':
+                        _deletePlaylistSong(widget.song!, widget.playListId!);
+                        break;
+                      case 'Details':
+                        showDialog(
+                          context: context,
+                          useRootNavigator: false,
+                          builder: (BuildContext context) {
+                            return const DetailsDialog();
+                          },
+                        );
+                        break;
+                      case 'Close':
+                        break;
+                    }
+                  },
+                  icon: const Icon(Icons.more_vert),
                 ),
               ],
             ),

@@ -114,14 +114,12 @@ P _playlistDeserializeProp<P>(
 const _PlaylisttypeEnumValueMap = {
   'main': 0,
   'local': 1,
-  'youtube': 2,
-  'favorite': 3,
+  'favorite': 2,
 };
 const _PlaylisttypeValueEnumMap = {
   0: PlaylistType.main,
   1: PlaylistType.local,
-  2: PlaylistType.youtube,
-  3: PlaylistType.favorite,
+  2: PlaylistType.favorite,
 };
 
 Id _playlistGetId(Playlist object) {

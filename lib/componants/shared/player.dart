@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -21,13 +22,17 @@ class Player extends StatefulWidget {
 
 class PlayerState extends State<Player> {
   late AudioPlayer audioPlayer;
+  List<Song> songs = [];
+  List<int> shuffledPlaylistSongIds = [];
+
   Duration currentPosition = Duration.zero;
   Duration totalDuration = Duration.zero;
+
   late StreamSubscription<Duration> positionSubscription;
   late StreamSubscription<Duration> durationSubscription;
+
   RepeatMode repeatMode = RepeatMode.repeatAll;
   bool shuffle = false;
-
   Timer? debounce;
 
   @override
@@ -74,6 +79,10 @@ class PlayerState extends State<Player> {
     } else {
       pauseSong();
     }
+
+    if (audioPlayerModel.currentPlaylistId != null) {
+      setSuffledIndices(audioPlayerModel.currentPlaylistId!);
+    }
   }
 
   void onPositionChanged(Duration position) {
@@ -107,18 +116,22 @@ class PlayerState extends State<Player> {
   }
 
   void shouldPlayNextSong() {
-    if (repeatMode == RepeatMode.noRepeat) {
-      return;
-    } else if (repeatMode == RepeatMode.repeatOne) {
-      // Play again from begining
-      audioPlayer.seek(Duration.zero);
-      audioPlayer.resume();
+    if (shuffle) {
+      playNextSong(checkShuffle: true);
     } else {
-      playNextSong();
+      if (repeatMode == RepeatMode.noRepeat) {
+        return;
+      } else if (repeatMode == RepeatMode.repeatOne) {
+        // Play again from begining
+        audioPlayer.seek(Duration.zero);
+        audioPlayer.resume();
+      } else {
+        playNextSong();
+      }
     }
   }
 
-  void playNextSong() async {
+  void playNextSong({bool checkShuffle = false}) async {
     final audioPlayerModel =
         Provider.of<AudioPlayerNotifier>(context, listen: false);
     if (audioPlayerModel.currentPlaylistId == null ||
@@ -131,13 +144,29 @@ class PlayerState extends State<Player> {
 
     if (currentPlaylistSong == null) return;
 
-    var nextPlaylistSong = await isar.playlistSongs
-        .filter()
-        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
-        .and()
-        .orderLessThan(currentPlaylistSong.order)
-        .sortByOrderDesc()
-        .findFirst();
+    int nextPlaylistSongIdFromShuffleList = 0;
+
+    if (checkShuffle) {
+      int currentPlaylistSongIdIndexFromShuffleList =
+          shuffledPlaylistSongIds.indexOf(currentPlaylistSong.id);
+      if (currentPlaylistSongIdIndexFromShuffleList >=
+          shuffledPlaylistSongIds.length) {
+        nextPlaylistSongIdFromShuffleList = shuffledPlaylistSongIds[0];
+      } else {
+        nextPlaylistSongIdFromShuffleList = shuffledPlaylistSongIds[
+            currentPlaylistSongIdIndexFromShuffleList + 1];
+      }
+    }
+
+    var nextPlaylistSong = checkShuffle
+        ? await isar.playlistSongs.get(nextPlaylistSongIdFromShuffleList)
+        : await isar.playlistSongs
+            .filter()
+            .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+            .and()
+            .orderLessThan(currentPlaylistSong.order)
+            .sortByOrderDesc()
+            .findFirst();
 
     // Get the first song if nextsong is not found
     nextPlaylistSong ??= await isar.playlistSongs
@@ -248,6 +277,14 @@ class PlayerState extends State<Player> {
     return "$minutes:$seconds";
   }
 
+  void toggleShuffleMode() async {
+    setState(() {
+      shuffle = !shuffle;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool("shuffleMode", shuffle);
+  }
+
   void toggleRepeatMode() async {
     setState(() {
       switch (repeatMode) {
@@ -265,6 +302,29 @@ class PlayerState extends State<Player> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     prefs.setInt("repeatMode", repeatMode.index);
+  }
+
+  void setSuffledIndices(int playlistId) async {
+    final isar = Provider.of<Isar>(context, listen: false);
+
+    final playlistSongs = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(playlistId))
+        .findAll();
+
+    for (var playlistSong in playlistSongs) {
+      shuffledPlaylistSongIds.add(playlistSong.id);
+    }
+
+    var random = Random();
+
+    for (int i = shuffledPlaylistSongIds.length - 1; i > 0; i--) {
+      int j = random.nextInt(i + 1);
+
+      var temp = shuffledPlaylistSongIds[i];
+      shuffledPlaylistSongIds[i] = shuffledPlaylistSongIds[j];
+      shuffledPlaylistSongIds[j] = temp;
+    }
   }
 
   @override
@@ -300,7 +360,7 @@ class PlayerState extends State<Player> {
                         child: Row(
                           children: [
                             IconButton(
-                              onPressed: () {},
+                              onPressed: toggleShuffleMode,
                               icon: shuffle
                                   ? const Icon(Icons.shuffle_on_rounded)
                                   : const Icon(Icons.shuffle_rounded),

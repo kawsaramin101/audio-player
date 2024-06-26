@@ -16,6 +16,8 @@ import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/song_model.dart';
 
+// Packages installed in Debian: libmediainfo-dev, mediainfo
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -29,16 +31,14 @@ void main() async {
   // TODO: song should start at the position they were left off
   // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: Show artist and album name
-  // TODO: implement three dot icon menu
+  // TODO: implement three dot icon menu - details remaining
   // TODO: Songlist should scroll to position of the song playing
   // TODO: improve playlist list, add three dot menu
-  // TODO: playing status in playlist
   // TODO: Song sorting by date, name
-  // TODO: Custom sorting using drag and drop
+  // TODO: Custom sorting using drag and drop, show drag handle on hover
   // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
   // TODO: show playlist on the player
-  // TODO: implement shuffle
   // TODO: implement keyboard shortcuts
   //       - spacebar to pause and play
   //       - arrow right next song, arrow left previous song

@@ -13,8 +13,6 @@ class PlaylistNameDialog extends StatefulWidget {
 }
 
 class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
-  bool isYoutubePlaylist = false;
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController urlController = TextEditingController();
 
@@ -28,9 +26,6 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
       return;
     }
 
-    final PlaylistType type =
-        isYoutubePlaylist ? PlaylistType.youtube : PlaylistType.local;
-
     int playlistId = 0;
     await isar.writeTxn(() async {
       final playlistWithHighestOrder =
@@ -39,7 +34,7 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
       final newPlaylist = Playlist()
         ..name = name
         ..order = (playlistWithHighestOrder?.order ?? 0) + 1
-        ..type = type;
+        ..type = PlaylistType.local;
 
       playlistId = await isar.playlists.put(newPlaylist);
     });
@@ -84,33 +79,6 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
                 ),
               ),
               const SizedBox(height: 10.0),
-              CheckboxListTile(
-                title: const Text("YouTube Playlist"),
-                value: isYoutubePlaylist,
-                onChanged: (bool? value) {
-                  setState(() {
-                    isYoutubePlaylist = value ?? false;
-                  });
-                },
-              ),
-              if (isYoutubePlaylist) ...[
-                const SizedBox(height: 10.0),
-                TextField(
-                  controller: urlController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Playlist URL',
-                  ),
-                ),
-                const SizedBox(height: 6.0),
-                const Text(
-                  "Playlist must be public",
-                  style: TextStyle(
-                    fontSize: 12.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
             ],
           ),
         ),

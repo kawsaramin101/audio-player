@@ -8,7 +8,10 @@ class Song {
   Id id = Isar.autoIncrement;
 
   late String? filePath;
-  late String? url;
+
+  late String? albumname;
+  late String? artistname;
+
   late int length;
 
   @Backlink(to: 'song')
