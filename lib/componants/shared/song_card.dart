@@ -123,7 +123,7 @@ class _SongCardState extends State<SongCard> {
                       : Icons.play_circle_outline_rounded,
                   size: 30.0,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,10 +148,6 @@ class _SongCardState extends State<SongCard> {
                                   fontSize: 13,
                                 ),
                               ),
-                      ),
-                      const Text(
-                        'Unknown Album . Unknown Artist',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -214,7 +210,7 @@ class _SongCardState extends State<SongCard> {
                           context: context,
                           useRootNavigator: false,
                           builder: (BuildContext context) {
-                            return const DetailsDialog();
+                            return DetailsDialog(song: widget.song!);
                           },
                         );
                         break;

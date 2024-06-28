@@ -9,8 +9,9 @@ class Song {
 
   late String? filePath;
 
-  late String? albumname;
-  late String? artistname;
+  // late String? albumname;
+  // late String? artistname;
+  late DateTime? createdAt;
 
   late int length;
 

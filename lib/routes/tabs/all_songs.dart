@@ -10,6 +10,7 @@ import 'package:music/componants/shared/songlist.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
+// import 'package:music/utils/mediainfo_wrapper.dart';
 
 import 'package:provider/provider.dart';
 
@@ -21,6 +22,8 @@ class AllSongs extends StatefulWidget {
 }
 
 class _AllSongsState extends State<AllSongs> {
+  // MediaInfo? mediaInfo;
+
   @override
   void initState() {
     super.initState();
@@ -72,17 +75,19 @@ class _AllSongsState extends State<AllSongs> {
     }
 
     for (var file in files) {
-      // Check if the song already exists by file path or URL
+      // final info = await getMediaInfo(file.path);
+
       var song =
           await isar.songs.filter().filePathEqualTo(file.path).findFirst();
 
       if (song == null) {
         // If the song doesn't exist, create it
-
+        final fileStat = await file.stat();
         song = Song()
           ..filePath = file.path
-          ..albumname = null
-          ..artistname = null
+          // ..albumname = info.albumName
+          // ..artistname = info.trackArtistNames.join(", ")
+          ..createdAt = fileStat.changed
           ..length = await file
               .length(); // You might need to calculate the length differently
         await isar.writeTxn(() async {

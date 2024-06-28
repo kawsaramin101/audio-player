@@ -16,7 +16,7 @@ import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/song_model.dart';
 
-// Packages installed in Debian: libmediainfo-dev, mediainfo
+// Packages installed in Debian: mediainfo
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
