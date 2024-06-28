@@ -30,14 +30,15 @@ void main() async {
   // await clearDatabase(isar);
   // TODO: song should start at the position they were left off
   // TODO: songs doesn't show when added for the first time in playlist page
+  // TODO: search
   // TODO: Show artist and album name
   // TODO: implement three dot icon menu - details remaining
   // TODO: Songlist should scroll to position of the song playing
   // TODO: improve playlist list, add three dot menu
   // TODO: Song sorting by date, name
   // TODO: Custom sorting using drag and drop, show drag handle on hover
-  // TODO: custom titlebar using bitsdojo_window to show a setting icon
   // TODO: settings page
+  // TODO: settings icon on the time section
   // TODO: show playlist on the player
   // TODO: implement keyboard shortcuts
   //       - spacebar to pause and play
@@ -55,7 +56,9 @@ void main() async {
           brightness: Brightness.dark,
         ),
         themeMode: ThemeMode.dark,
-        theme: ThemeData(useMaterial3: true),
+        theme: ThemeData(
+          useMaterial3: true,
+        ),
         debugShowCheckedModeBanner: false,
         home: const MainScreen(),
         initialRoute: "/",
@@ -104,7 +107,7 @@ class MainScreen extends StatelessWidget {
       ),
       bottomNavigationBar: const BottomAppBar(
         color: Color(0xFF232323),
-        height: 90.0,
+        height: 125.0,
         child: Player(),
       ),
     );

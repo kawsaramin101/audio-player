@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:marquee/marquee.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/song_model.dart';
@@ -21,6 +23,8 @@ class Player extends StatefulWidget {
 }
 
 class PlayerState extends State<Player> {
+  final FocusNode _focusNode = FocusNode();
+
   late AudioPlayer audioPlayer;
   List<Song> songs = [];
   List<int> shuffledPlaylistSongIds = [];
@@ -34,6 +38,7 @@ class PlayerState extends State<Player> {
   RepeatMode repeatMode = RepeatMode.repeatAll;
   bool shuffle = false;
   Timer? debounce;
+  bool isSeekingByProgressBar = false;
 
   @override
   void initState() {
@@ -62,6 +67,7 @@ class PlayerState extends State<Player> {
     debounce?.cancel();
     positionSubscription.cancel();
     durationSubscription.cancel();
+    _focusNode.dispose();
     audioPlayer.dispose();
     super.dispose();
   }
@@ -86,9 +92,11 @@ class PlayerState extends State<Player> {
   }
 
   void onPositionChanged(Duration position) {
-    setState(() {
-      currentPosition = position;
-    });
+    if (!isSeekingByProgressBar) {
+      setState(() {
+        currentPosition = position;
+      });
+    }
 
     if (debounce == null || !debounce!.isActive) {
       debounce = Timer(const Duration(seconds: 1), () {
@@ -238,9 +246,11 @@ class PlayerState extends State<Player> {
     int? playListId = prefs.getInt("currentPlaylistId");
     int? playlistSongId = prefs.getInt("currentplaylistSongId");
     int repeatModeIndex = prefs.getInt("repeatMode") ?? 0;
+    bool shuffleMode = prefs.getBool("shuffleMode") ?? true;
 
     setState(() {
       repeatMode = RepeatMode.values[repeatModeIndex];
+      shuffle = shuffleMode;
     });
 
     Song? song = await isar.songs.get(currentSongId!);
@@ -251,13 +261,16 @@ class PlayerState extends State<Player> {
         playlistSongId != null) {
       context
           .read<AudioPlayerNotifier>()
-          .setSong(song, playListId, playlistSongId, true);
+          .setSong(song, playListId, playlistSongId, false);
       int? seconds = prefs.getInt('currentDuration');
 
       if (seconds != null) {
-        // audioPlayer.seek(Duration(seconds: seconds));
+        debugPrint("$seconds");
+        // await audioPlayer.seek(Duration(seconds: seconds));
       }
-      context.read<AudioPlayerNotifier>().pause();
+      if (mounted) {
+        context.read<AudioPlayerNotifier>().pause();
+      }
     }
   }
 
@@ -327,140 +340,170 @@ class PlayerState extends State<Player> {
     }
   }
 
+  void _handleKeyPress(KeyEvent event) {
+    debugPrint("RUn");
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.space) {
+        debugPrint('Space bar pressed');
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        debugPrint('Left arrow pressed');
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        debugPrint('Right arrow pressed');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerNotifier>(
       builder: (context, audioPlayerModel, child) {
-        return Column(
-          children: <Widget>[
-            SizedBox(
-              height: 20.0,
-              child: audioPlayerModel.currentSong != null
-                  ? Marquee(
-                      text: audioPlayerModel.currentSong!.filePath
-                              ?.split('/')
-                              .last ??
-                          'Unknown',
-                      style: const TextStyle(fontSize: 13),
-                      scrollAxis: Axis.horizontal,
-                      velocity: 100.0,
-                      blankSpace: 80.0,
-                      startAfter: const Duration(milliseconds: 500),
-                    )
-                  : const Text(""),
-            ),
-            Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: toggleShuffleMode,
-                              icon: shuffle
-                                  ? const Icon(Icons.shuffle_on_rounded)
-                                  : const Icon(Icons.shuffle_rounded),
-                            ),
-                            IconButton(
-                              onPressed: toggleRepeatMode,
-                              icon: Icon(
-                                () {
-                                  switch (repeatMode) {
-                                    case RepeatMode.noRepeat:
-                                      return Icons.repeat;
-                                    case RepeatMode.repeatOne:
-                                      return Icons.repeat_one_on_rounded;
-                                    case RepeatMode.repeatAll:
-                                      return Icons.repeat_on_rounded;
-                                    default:
-                                      return Icons.repeat;
-                                  }
-                                }(),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize
-                            .min, // Ensures the row takes up minimal space
+        return KeyboardListener(
+          focusNode: _focusNode,
+          autofocus: true,
+          onKeyEvent: _handleKeyPress,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              // Spacer widget to take up the empty space at the top
+              const Spacer(),
+              SizedBox(
+                height: 20.0,
+                child: audioPlayerModel.currentSong != null
+                    ? Marquee(
+                        text: audioPlayerModel.currentSong!.filePath
+                                ?.split('/')
+                                .last ??
+                            'Unknown',
+                        style: const TextStyle(fontSize: 13),
+                        scrollAxis: Axis.horizontal,
+                        velocity: 100.0,
+                        blankSpace: 80.0,
+                        startAfter: const Duration(milliseconds: 500),
+                      )
+                    : const Text(""),
+              ),
+              const SizedBox(
+                height: 20.0,
+              ),
+              ProgressBar(
+                progress: currentPosition,
+                total: totalDuration,
+                barHeight: 3.0,
+                thumbRadius: 8.0,
+                timeLabelLocation: TimeLabelLocation.sides,
+                timeLabelTextStyle: const TextStyle(fontSize: 13.0),
+                thumbGlowRadius: 12.0,
+                onSeek: (duration) {
+                  isSeekingByProgressBar = true;
+                  currentPosition = duration;
+                  audioPlayer.seek(
+                    duration,
+                  );
+                  isSeekingByProgressBar = false;
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Row(
                         children: [
                           IconButton(
-                            onPressed: playPreviousSong,
-                            icon: const Icon(Icons.skip_previous_rounded),
+                            onPressed: toggleShuffleMode,
+                            icon: shuffle
+                                ? const Icon(Icons.shuffle_on_rounded)
+                                : const Icon(Icons.shuffle_rounded),
                           ),
                           IconButton(
-                            onPressed: () {
-                              var newPosition =
-                                  currentPosition - const Duration(seconds: 7);
-                              if (newPosition < Duration.zero) {
-                                newPosition = Duration.zero;
-                              }
-                              audioPlayer.seek(newPosition);
-                            },
-                            icon: const Icon(Icons.fast_rewind_rounded),
-                          ),
-                          if (audioPlayerModel.isPlaying) ...[
-                            IconButton(
-                              icon: const Icon(Icons.pause),
-                              onPressed: () async {
-                                if (context.mounted) {
-                                  context.read<AudioPlayerNotifier>().pause();
+                            onPressed: toggleRepeatMode,
+                            icon: Icon(
+                              () {
+                                switch (repeatMode) {
+                                  case RepeatMode.noRepeat:
+                                    return Icons.repeat;
+                                  case RepeatMode.repeatOne:
+                                    return Icons.repeat_one_on_rounded;
+                                  case RepeatMode.repeatAll:
+                                    return Icons.repeat_on_rounded;
+                                  default:
+                                    return Icons.repeat;
                                 }
-                              },
+                              }(),
                             ),
-                          ] else ...[
-                            IconButton(
-                              icon: Icon(
-                                Icons.play_arrow,
-                                color: audioPlayerModel.currentSong == null
-                                    ? Colors.grey
-                                    : null,
-                              ),
-                              onPressed: audioPlayerModel.currentSong == null
-                                  ? null
-                                  : () async {
-                                      context
-                                          .read<AudioPlayerNotifier>()
-                                          .play();
-                                    },
-                            ),
-                          ],
-                          IconButton(
-                            onPressed: () {
-                              var newPosition =
-                                  currentPosition + const Duration(seconds: 7);
-                              if (newPosition > totalDuration) {
-                                newPosition = totalDuration;
-                              }
-                              audioPlayer.seek(newPosition);
-                            },
-                            icon: const Icon(Icons.fast_forward_rounded),
-                          ),
-                          IconButton(
-                            onPressed: playNextSong,
-                            icon: const Icon(Icons.skip_next_rounded),
-                          ),
+                          )
                         ],
                       ),
-                      Expanded(
-                        child: Align(
-                          child: Container(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              "${formatDuration(currentPosition)}/${formatDuration(totalDuration)}",
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize
+                          .min, // Ensures the row takes up minimal space
+                      children: [
+                        IconButton(
+                          onPressed: playPreviousSong,
+                          icon: const Icon(Icons.skip_previous_rounded),
+                        ),
+                        if (audioPlayerModel.isPlaying) ...[
+                          IconButton(
+                            icon: const Icon(Icons.pause),
+                            onPressed: () async {
+                              if (context.mounted) {
+                                context.read<AudioPlayerNotifier>().pause();
+                              }
+                            },
+                          ),
+                        ] else ...[
+                          IconButton(
+                            icon: Icon(
+                              Icons.play_arrow,
+                              color: audioPlayerModel.currentSong == null
+                                  ? Colors.grey
+                                  : null,
                             ),
+                            onPressed: audioPlayerModel.currentSong == null
+                                ? null
+                                : () async {
+                                    context.read<AudioPlayerNotifier>().play();
+                                  },
+                          ),
+                        ],
+                        IconButton(
+                          onPressed: playNextSong,
+                          icon: const Icon(Icons.skip_next_rounded),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: Align(
+                        child: Container(
+                          alignment: Alignment.centerRight,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  // Go to settings page
+                                },
+                                icon: const Icon(Icons.settings_rounded),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  // Go to info page
+                                },
+                                icon: const Icon(Icons.info),
+                              )
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  )),
-            ),
-          ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

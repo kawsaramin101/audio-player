@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
@@ -15,7 +14,8 @@ class Playlists extends StatefulWidget {
   State<Playlists> createState() => _PlaylistsState();
 }
 
-class _PlaylistsState extends State<Playlists> {
+class _PlaylistsState extends State<Playlists>
+    with AutomaticKeepAliveClientMixin {
   late Stream<List<Playlist>> playlistStream = Stream.value([]);
 
   @override
@@ -23,6 +23,9 @@ class _PlaylistsState extends State<Playlists> {
     super.initState();
     setupPlaylistStream();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   void setupPlaylistStream() async {
     final isar = Provider.of<Isar>(context, listen: false);
@@ -39,6 +42,7 @@ class _PlaylistsState extends State<Playlists> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: StreamBuilder<List<Playlist>>(
         stream: playlistStream,
@@ -84,16 +88,7 @@ class _PlaylistsState extends State<Playlists> {
                     subtitle: FutureBuilder<int>(
                       future: playlist.songs.count(),
                       builder: (context, countSnapshot) {
-                        if (countSnapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Text('Loading...');
-                        } else if (countSnapshot.hasError) {
-                          return const Text('Error loading song count');
-                        } else if (countSnapshot.hasData) {
-                          return Text('Total songs: ${countSnapshot.data}');
-                        } else {
-                          return const Text('Total songs: 0');
-                        }
+                        return Text("Songs: ${countSnapshot.data ?? 0}");
                       },
                     ),
                     trailing: IconButton(

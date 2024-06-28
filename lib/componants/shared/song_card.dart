@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:marquee/marquee.dart';
-import 'package:music/componants/playlist/details_dialog.dart';
+import 'package:music/componants/shared/details_dialog.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
