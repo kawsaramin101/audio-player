@@ -39,6 +39,7 @@ class PlayerState extends State<Player> {
   bool shuffle = false;
   Timer? debounce;
   bool isSeekingByProgressBar = false;
+  bool hasSetPostionFromLocalStorage = false;
 
   @override
   void initState() {
@@ -108,6 +109,23 @@ class PlayerState extends State<Player> {
 
   void setSong(String songPath) async {
     await audioPlayer.setSource(DeviceFileSource(songPath));
+
+    if (!hasSetPostionFromLocalStorage) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? seconds = prefs.getInt('currentDuration');
+
+      if (seconds != null) {
+        try {
+          audioPlayer.seek(Duration(seconds: seconds));
+        } on TimeoutException catch (e) {
+          debugPrint('A TimeoutException occurred: $e');
+        } catch (e) {
+          debugPrint('An error occurred: $e');
+        }
+      }
+      hasSetPostionFromLocalStorage = true;
+    }
+
     audioPlayer.getDuration().then(
           (value) => setState(() {
             totalDuration = value!;
@@ -262,23 +280,6 @@ class PlayerState extends State<Player> {
       context
           .read<AudioPlayerNotifier>()
           .setSong(song, playListId, playlistSongId, false);
-
-      int? seconds = prefs.getInt('currentDuration');
-
-      if (seconds != null) {
-        await Future.delayed(const Duration(seconds: 1));
-
-        try {
-          audioPlayer.seek(Duration(seconds: seconds));
-        } on TimeoutException catch (e) {
-          debugPrint('A TimeoutException occurred: $e');
-        } catch (e) {
-          debugPrint('An error occurred: $e');
-        }
-      }
-      if (mounted) {
-        context.read<AudioPlayerNotifier>().pause();
-      }
     }
   }
 

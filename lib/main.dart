@@ -28,7 +28,6 @@ void main() async {
   );
 
   // await clearDatabase(isar);
-  // TODO: song should start at the position they were left off
   // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: search
   // TODO: Show artist and album name
