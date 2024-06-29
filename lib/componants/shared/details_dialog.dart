@@ -21,7 +21,6 @@ class DetailsDialog extends StatelessWidget {
             children: <Widget>[
               Text("Name: ${song.filePath?.split('/').last ?? 'Unknown'}"),
               Text("Created At: ${formatDateTime(song.createdAt!)}"),
-              const Text("Artist:"),
             ],
           ),
         ),

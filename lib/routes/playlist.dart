@@ -43,7 +43,7 @@ class _PlaylistState extends State<Playlist> {
           ),
         ),
         playlist == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: Text("Playlist not found!"))
             : playlist!.songs.isEmpty
                 ? Expanded(
                     child: Center(
@@ -62,22 +62,22 @@ class _PlaylistState extends State<Playlist> {
                 : Expanded(
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                "/addSongToPlaylist",
-                                arguments: PlaylistArguments(playlist!.id),
-                              );
-                            },
-                            child: const Text('Add or Remove Song'),
-                          ),
-                        ),
                         Expanded(
                           child: SongList(
                             playlistId: playlist!.id,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    "/addSongToPlaylist",
+                                    arguments: PlaylistArguments(playlist!.id),
+                                  );
+                                },
+                                child: const Text('Add or Remove Song'),
+                              ),
+                            ),
                           ),
                         ),
                       ],

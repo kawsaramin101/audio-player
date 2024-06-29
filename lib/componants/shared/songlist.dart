@@ -8,9 +8,10 @@ import 'package:music/componants/shared/song_card.dart';
 import 'package:provider/provider.dart';
 
 class SongList extends StatefulWidget {
+  final Widget? child;
   final int? playlistId;
 
-  const SongList({super.key, this.playlistId});
+  const SongList({super.key, this.playlistId, this.child});
 
   @override
   State<SongList> createState() => _SongListState();
@@ -21,18 +22,13 @@ class _SongListState extends State<SongList> {
   Playlist? playlist;
   Stream<void>? playlistStream;
   StreamSubscription<void>? subscription;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     setupWatcher();
     fetchSongs();
-  }
-
-  @override
-  void dispose() {
-    subscription?.cancel();
-    super.dispose();
   }
 
   void setupWatcher() {
@@ -76,29 +72,60 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
-    return playlistSongs.isEmpty
-        ? const Center(
-            child: Text('No Songs'),
-          )
-        : ListView.separated(
-            itemCount: playlistSongs.length,
-            separatorBuilder: (context, index) => const Divider(
-              height: 0.0,
-              thickness: 2.0,
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: TextField(
+                  autocorrect: false,
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    labelText: 'Search',
+                    border: OutlineInputBorder(),
+                    suffixIcon: Icon(Icons.search),
+                  ),
+                ),
+              ),
             ),
-            itemBuilder: (context, index) {
-              final playlistSong = playlistSongs[index];
-              final song = playlistSong.song.value;
-              if (song != null) {
-                return SongCard(
-                  song: song,
-                  playListId: playlist!.id,
-                  playlistSongId: playlistSong.id,
-                );
-              } else {
-                return const SizedBox.shrink();
-              }
-            },
-          );
+            widget.child ?? Container()
+          ],
+        ),
+        Expanded(
+          child: playlistSongs.isEmpty
+              ? const Center(
+                  child: Text('No Songs'),
+                )
+              : ListView.separated(
+                  itemCount: playlistSongs.length,
+                  separatorBuilder: (context, index) => const Divider(
+                    height: 0.0,
+                    thickness: 2.0,
+                  ),
+                  itemBuilder: (context, index) {
+                    final playlistSong = playlistSongs[index];
+                    final song = playlistSong.song.value;
+                    if (song != null) {
+                      return SongCard(
+                        song: song,
+                        playListId: playlist!.id,
+                        playlistSongId: playlistSong.id,
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    subscription?.cancel();
+    super.dispose();
   }
 }
