@@ -246,7 +246,7 @@ class PlayerState extends State<Player> {
     int? playListId = prefs.getInt("currentPlaylistId");
     int? playlistSongId = prefs.getInt("currentplaylistSongId");
     int repeatModeIndex = prefs.getInt("repeatMode") ?? 0;
-    bool shuffleMode = prefs.getBool("shuffleMode") ?? true;
+    bool shuffleMode = prefs.getBool("shuffleMode") ?? false;
 
     setState(() {
       repeatMode = RepeatMode.values[repeatModeIndex];
@@ -262,11 +262,19 @@ class PlayerState extends State<Player> {
       context
           .read<AudioPlayerNotifier>()
           .setSong(song, playListId, playlistSongId, false);
+
       int? seconds = prefs.getInt('currentDuration');
 
       if (seconds != null) {
-        debugPrint("$seconds");
-        // await audioPlayer.seek(Duration(seconds: seconds));
+        await Future.delayed(const Duration(seconds: 1));
+
+        try {
+          audioPlayer.seek(Duration(seconds: seconds));
+        } on TimeoutException catch (e) {
+          debugPrint('A TimeoutException occurred: $e');
+        } catch (e) {
+          debugPrint('An error occurred: $e');
+        }
       }
       if (mounted) {
         context.read<AudioPlayerNotifier>().pause();

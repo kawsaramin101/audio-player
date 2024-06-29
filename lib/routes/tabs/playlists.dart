@@ -75,15 +75,10 @@ class _PlaylistsState extends State<Playlists>
                           ? const Color(0xFF2A2A2A)
                           : null,
                   child: ListTile(
-                    leading: playlist.type == PlaylistType.favorite
-                        ? const Icon(
-                            Icons.favorite_rounded,
-                            size: 40,
-                          )
-                        : const Icon(
-                            Icons.playlist_play_rounded,
-                            size: 50,
-                          ),
+                    leading: const Icon(
+                      Icons.playlist_play_rounded,
+                      size: 50,
+                    ),
                     title: Text(playlist.name),
                     subtitle: FutureBuilder<int>(
                       future: playlist.songs.count(),
