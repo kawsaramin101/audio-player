@@ -117,10 +117,10 @@ class PlayerState extends State<Player> {
       if (seconds != null) {
         try {
           audioPlayer.seek(Duration(seconds: seconds));
-        } on TimeoutException catch (e) {
-          debugPrint('A TimeoutException occurred: $e');
+        } on TimeoutException {
+          // Do nothing
         } catch (e) {
-          debugPrint('An error occurred: $e');
+          // Do nothing
         }
       }
       hasSetPostionFromLocalStorage = true;

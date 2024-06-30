@@ -183,13 +183,6 @@ class _SongCardState extends State<SongCard> {
                           title: Text('Remove'),
                         ),
                       ),
-                      const PopupMenuItem<String>(
-                        value: 'Delete',
-                        child: ListTile(
-                          leading: Icon(Icons.delete_rounded),
-                          title: Text('Delete'),
-                        ),
-                      ),
                       const PopupMenuDivider(),
                       const PopupMenuItem<String>(
                         value: 'Close',

@@ -73,7 +73,9 @@ class _PlaylistState extends State<Playlist> {
                                     context,
                                     "/addSongToPlaylist",
                                     arguments: PlaylistArguments(playlist!.id),
-                                  );
+                                  ).then((_) {
+                                    fetchPlaylist();
+                                  });
                                 },
                                 child: const Text('Add or Remove Song'),
                               ),

@@ -27,17 +27,15 @@ void main() async {
     directory: dir.path,
   );
 
-  // await clearDatabase(isar);
+  await clearDatabase(isar);
   // TODO: songs doesn't show when added for the first time in playlist page
-  // TODO: search
   // TODO: Show artist and album name
-  // TODO: implement three dot icon menu - details remaining
+
   // TODO: Songlist should scroll to position of the song playing
   // TODO: improve playlist list, add three dot menu
   // TODO: Song sorting by date, name
   // TODO: Custom sorting using drag and drop, show drag handle on hover
   // TODO: settings page
-  // TODO: settings icon on the time section
   // TODO: show playlist on the player
   // TODO: implement keyboard shortcuts
   //       - spacebar to pause and play

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:music/data/playlist_model.dart';
@@ -19,10 +18,13 @@ class SongList extends StatefulWidget {
 
 class _SongListState extends State<SongList> {
   List<PlaylistSong> playlistSongs = [];
+  List<PlaylistSong> filteredPlaylistSongs = [];
   Playlist? playlist;
   Stream<void>? playlistStream;
   StreamSubscription<void>? subscription;
   TextEditingController searchController = TextEditingController();
+
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -50,8 +52,6 @@ class _SongListState extends State<SongList> {
     }
 
     if (playlist != null) {
-      await playlist!.songs.load();
-
       // Query playlist songs and order by 'order' property
       final loadedPlaylistSongs = await isar.playlistSongs
           .filter()
@@ -66,12 +66,46 @@ class _SongListState extends State<SongList> {
 
       setState(() {
         playlistSongs = loadedPlaylistSongs;
+        if (searchController.text.isEmpty) {
+          filteredPlaylistSongs = [];
+        } else {
+          _onSearchChanged(searchController.text);
+        }
       });
     }
   }
 
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (query.isNotEmpty) {
+        final queryParts = query.toLowerCase().split(' ');
+        final searchResults = playlistSongs.where((playlistSong) {
+          final song = playlistSong.song.value;
+          if (song != null) {
+            return queryParts.every((part) => song.filePathWords.any(
+                (word) => word.toLowerCase().contains(part.toLowerCase())));
+          }
+          return false;
+        }).toList();
+
+        setState(() {
+          filteredPlaylistSongs = searchResults;
+        });
+      } else {
+        setState(() {
+          filteredPlaylistSongs = [];
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final songsToDisplay = searchController.text.isNotEmpty
+        ? filteredPlaylistSongs
+        : playlistSongs;
+
     return Column(
       children: [
         Row(
@@ -79,13 +113,20 @@ class _SongListState extends State<SongList> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: TextField(
-                  autocorrect: false,
-                  controller: searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Search',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.search),
+                child: SizedBox(
+                  height: 40.0,
+                  child: TextField(
+                    autocorrect: false,
+                    controller: searchController,
+                    onChanged: _onSearchChanged,
+                    decoration: const InputDecoration(
+                      hintText: "Search",
+                      hintStyle: TextStyle(fontSize: 14.0),
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.search),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 10.0),
+                    ),
                   ),
                 ),
               ),
@@ -94,18 +135,20 @@ class _SongListState extends State<SongList> {
           ],
         ),
         Expanded(
-          child: playlistSongs.isEmpty
-              ? const Center(
-                  child: Text('No Songs'),
+          child: songsToDisplay.isEmpty
+              ? Center(
+                  child: Text(searchController.text.isNotEmpty
+                      ? 'No matches found'
+                      : "No song"),
                 )
               : ListView.separated(
-                  itemCount: playlistSongs.length,
+                  itemCount: songsToDisplay.length,
                   separatorBuilder: (context, index) => const Divider(
                     height: 0.0,
                     thickness: 2.0,
                   ),
                   itemBuilder: (context, index) {
-                    final playlistSong = playlistSongs[index];
+                    final playlistSong = songsToDisplay[index];
                     final song = playlistSong.song.value;
                     if (song != null) {
                       return SongCard(

@@ -27,8 +27,13 @@ const SongSchema = CollectionSchema(
       name: r'filePath',
       type: IsarType.string,
     ),
-    r'length': PropertySchema(
+    r'filePathWords': PropertySchema(
       id: 2,
+      name: r'filePathWords',
+      type: IsarType.stringList,
+    ),
+    r'length': PropertySchema(
+      id: 3,
       name: r'length',
       type: IsarType.long,
     )
@@ -38,7 +43,21 @@ const SongSchema = CollectionSchema(
   deserialize: _songDeserialize,
   deserializeProp: _songDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'filePathWords': IndexSchema(
+      id: 6015692299830399732,
+      name: r'filePathWords',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'filePathWords',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {
     r'playlists': LinkSchema(
       id: -6762565121486107710,
@@ -67,6 +86,13 @@ int _songEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.filePathWords.length * 3;
+  {
+    for (var i = 0; i < object.filePathWords.length; i++) {
+      final value = object.filePathWords[i];
+      bytesCount += value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -78,7 +104,8 @@ void _songSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.filePath);
-  writer.writeLong(offsets[2], object.length);
+  writer.writeStringList(offsets[2], object.filePathWords);
+  writer.writeLong(offsets[3], object.length);
 }
 
 Song _songDeserialize(
@@ -91,7 +118,7 @@ Song _songDeserialize(
   object.createdAt = reader.readDateTimeOrNull(offsets[0]);
   object.filePath = reader.readStringOrNull(offsets[1]);
   object.id = id;
-  object.length = reader.readLong(offsets[2]);
+  object.length = reader.readLong(offsets[3]);
   return object;
 }
 
@@ -107,6 +134,8 @@ P _songDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 3:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -131,6 +160,14 @@ extension SongQueryWhereSort on QueryBuilder<Song, Song, QWhere> {
   QueryBuilder<Song, Song, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhere> anyFilePathWordsElement() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'filePathWords'),
+      );
     });
   }
 }
@@ -198,6 +235,142 @@ extension SongQueryWhere on QueryBuilder<Song, Song, QWhereClause> {
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementEqualTo(
+      String filePathWordsElement) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'filePathWords',
+        value: [filePathWordsElement],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementNotEqualTo(
+      String filePathWordsElement) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'filePathWords',
+              lower: [],
+              upper: [filePathWordsElement],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'filePathWords',
+              lower: [filePathWordsElement],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'filePathWords',
+              lower: [filePathWordsElement],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'filePathWords',
+              lower: [],
+              upper: [filePathWordsElement],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementGreaterThan(
+    String filePathWordsElement, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'filePathWords',
+        lower: [filePathWordsElement],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementLessThan(
+    String filePathWordsElement, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'filePathWords',
+        lower: [],
+        upper: [filePathWordsElement],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementBetween(
+    String lowerFilePathWordsElement,
+    String upperFilePathWordsElement, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'filePathWords',
+        lower: [lowerFilePathWordsElement],
+        includeLower: includeLower,
+        upper: [upperFilePathWordsElement],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementStartsWith(
+      String FilePathWordsElementPrefix) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'filePathWords',
+        lower: [FilePathWordsElementPrefix],
+        upper: ['$FilePathWordsElementPrefix\u{FFFFF}'],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'filePathWords',
+        value: [''],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> filePathWordsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.lessThan(
+              indexName: r'filePathWords',
+              upper: [''],
+            ))
+            .addWhereClause(IndexWhereClause.greaterThan(
+              indexName: r'filePathWords',
+              lower: [''],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.greaterThan(
+              indexName: r'filePathWords',
+              lower: [''],
+            ))
+            .addWhereClause(IndexWhereClause.lessThan(
+              indexName: r'filePathWords',
+              upper: [''],
+            ));
+      }
     });
   }
 }
@@ -414,6 +587,225 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
         property: r'filePath',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition>
+      filePathWordsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'filePathWords',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition>
+      filePathWordsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'filePathWords',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsElementMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'filePathWords',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition>
+      filePathWordsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'filePathWords',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition>
+      filePathWordsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'filePathWords',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition>
+      filePathWordsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> filePathWordsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'filePathWords',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -684,6 +1076,12 @@ extension SongQueryWhereDistinct on QueryBuilder<Song, Song, QDistinct> {
     });
   }
 
+  QueryBuilder<Song, Song, QDistinct> distinctByFilePathWords() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'filePathWords');
+    });
+  }
+
   QueryBuilder<Song, Song, QDistinct> distinctByLength() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'length');
@@ -707,6 +1105,12 @@ extension SongQueryProperty on QueryBuilder<Song, Song, QQueryProperty> {
   QueryBuilder<Song, String?, QQueryOperations> filePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'filePath');
+    });
+  }
+
+  QueryBuilder<Song, List<String>, QQueryOperations> filePathWordsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filePathWords');
     });
   }
 
