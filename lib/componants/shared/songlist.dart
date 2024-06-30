@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:music/notifiers/audio_player_notifier.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/componants/shared/song_card.dart';
 import 'package:provider/provider.dart';
+
+final pageBucket = PageStorageBucket();
 
 class SongList extends StatefulWidget {
   final Widget? child;
@@ -24,6 +29,8 @@ class _SongListState extends State<SongList> {
   StreamSubscription<void>? subscription;
   TextEditingController searchController = TextEditingController();
 
+  final ItemScrollController itemScrollController = ItemScrollController();
+
   Timer? _debounce;
 
   @override
@@ -31,6 +38,17 @@ class _SongListState extends State<SongList> {
     super.initState();
     setupWatcher();
     fetchSongs();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final audioPlayerModel = Provider.of<AudioPlayerNotifier>(context);
+    if (audioPlayerModel.currentSong != null &&
+        audioPlayerModel.currentPlaylistId != null &&
+        audioPlayerModel.currentPlaylistId == playlist?.id) {
+      _listenSongChange(audioPlayerModel.currentPlaylistSongId!);
+    }
   }
 
   void setupWatcher() {
@@ -100,6 +118,18 @@ class _SongListState extends State<SongList> {
     });
   }
 
+  void _listenSongChange(int playlistSongId) {
+    int index = playlistSongs
+        .indexWhere((playlistSong) => playlistSong.id == playlistSongId);
+    if (index != -1) {
+      itemScrollController.scrollTo(
+          index: index,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final songsToDisplay = searchController.text.isNotEmpty
@@ -141,25 +171,29 @@ class _SongListState extends State<SongList> {
                       ? 'No matches found'
                       : "No song"),
                 )
-              : ListView.separated(
-                  itemCount: songsToDisplay.length,
-                  separatorBuilder: (context, index) => const Divider(
-                    height: 0.0,
-                    thickness: 2.0,
+              : PageStorage(
+                  bucket: pageBucket,
+                  child: ScrollablePositionedList.separated(
+                    itemCount: songsToDisplay.length,
+                    itemScrollController: itemScrollController,
+                    separatorBuilder: (context, index) => const Divider(
+                      height: 0.0,
+                      thickness: 2.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final playlistSong = songsToDisplay[index];
+                      final song = playlistSong.song.value;
+                      if (song != null) {
+                        return SongCard(
+                          song: song,
+                          playListId: playlist!.id,
+                          playlistSongId: playlistSong.id,
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    final playlistSong = songsToDisplay[index];
-                    final song = playlistSong.song.value;
-                    if (song != null) {
-                      return SongCard(
-                        song: song,
-                        playListId: playlist!.id,
-                        playlistSongId: playlistSong.id,
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  },
                 ),
         ),
       ],
@@ -169,6 +203,7 @@ class _SongListState extends State<SongList> {
   @override
   void dispose() {
     subscription?.cancel();
+
     super.dispose();
   }
 }
