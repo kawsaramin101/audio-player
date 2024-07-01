@@ -7,17 +7,20 @@ class AudioPlayerNotifier extends ChangeNotifier {
   int? _currentPlaylistSongId;
   int? _currentPlaylistId;
   bool _isPlaying = false;
+  final ValueNotifier<Song?> _songNotifier = ValueNotifier<Song?>(null);
 
   Song? get currentSong => _currentSong;
   int? get currentPlaylistSongId => _currentPlaylistSongId;
   int? get currentPlaylistId => _currentPlaylistId;
   bool get isPlaying => _isPlaying;
+  ValueNotifier get songNotifer => _songNotifier;
 
   void setSong(Song song, int playlistId, int playlistSongId, bool isPlaying) {
     _currentSong = song;
     _currentPlaylistId = playlistId;
     _currentPlaylistSongId = playlistSongId;
     _isPlaying = isPlaying;
+    _songNotifier.value = song;
     notifyListeners();
     saveSongInfoToLocalStorage(song.id, playlistId, playlistSongId);
   }

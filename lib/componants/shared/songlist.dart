@@ -40,17 +40,15 @@ class _SongListState extends State<SongList> {
     super.initState();
     setupWatcher();
     fetchSongs();
+
+    final audioPlayerNotifier =
+        Provider.of<AudioPlayerNotifier>(context, listen: false);
+    audioPlayerNotifier.songNotifer.addListener(_listenSongChange);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final audioPlayerNotifier = Provider.of<AudioPlayerNotifier>(context);
-    if (audioPlayerNotifier.currentSong != null &&
-        audioPlayerNotifier.currentPlaylistId != null &&
-        audioPlayerNotifier.currentPlaylistId == playlist?.id) {
-      _listenSongChange(audioPlayerNotifier.currentPlaylistSongId!);
-    }
   }
 
   void setupWatcher() {
@@ -120,16 +118,20 @@ class _SongListState extends State<SongList> {
     });
   }
 
-  void _listenSongChange(int playlistSongId) {
-    int index = playlistSongs
-        .indexWhere((playlistSong) => playlistSong.id == playlistSongId);
-    if (index != -1) {
-      debugPrint("RUn");
-      itemScrollController.scrollTo(
-          index: index,
-          alignment: 0.5,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic);
+  void _listenSongChange() {
+    if (mounted) {
+      final audioPlayerNotifier =
+          Provider.of<AudioPlayerNotifier>(context, listen: false);
+
+      int index = playlistSongs.indexWhere((playlistSong) =>
+          playlistSong.id == audioPlayerNotifier.currentPlaylistSongId!);
+      if (searchController.text.isEmpty && index != -1) {
+        itemScrollController.scrollTo(
+            index: index,
+            alignment: 0.4,
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic);
+      }
     }
   }
 
