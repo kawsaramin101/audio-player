@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:isar/isar.dart';
 import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +14,28 @@ class PlaylistNameDialog extends StatefulWidget {
 class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController urlController = TextEditingController();
+  bool isFavouriteAvailable = false;
+  bool isFavouriteChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavouritePlaylist();
+  }
+
+  Future<void> _checkFavouritePlaylist() async {
+    final isar = Provider.of<Isar>(context, listen: false);
+    final favouritePlaylist = await isar.playlists
+        .filter()
+        .typeEqualTo(PlaylistType.favorite)
+        .findFirst();
+
+    if (favouritePlaylist == null) {
+      setState(() {
+        isFavouriteAvailable = true;
+      });
+    }
+  }
 
   Future<void> _createPlaylist(BuildContext context) async {
     final isar = Provider.of<Isar>(context, listen: false);
@@ -34,7 +55,8 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
       final newPlaylist = Playlist()
         ..name = name
         ..order = (playlistWithHighestOrder?.order ?? 0) + 1
-        ..type = PlaylistType.local;
+        ..type =
+            isFavouriteChecked ? PlaylistType.favorite : PlaylistType.local;
 
       playlistId = await isar.playlists.put(newPlaylist);
     });
@@ -79,6 +101,16 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
                 ),
               ),
               const SizedBox(height: 10.0),
+              if (isFavouriteAvailable)
+                CheckboxListTile(
+                  title: const Text('Favourite'),
+                  value: isFavouriteChecked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isFavouriteChecked = value ?? false;
+                    });
+                  },
+                ),
             ],
           ),
         ),

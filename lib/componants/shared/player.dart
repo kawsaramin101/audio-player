@@ -76,19 +76,19 @@ class PlayerState extends State<Player> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final audioPlayerModel = Provider.of<AudioPlayerNotifier>(context);
-    if (audioPlayerModel.currentSong != null) {
-      setSong(audioPlayerModel.currentSong!.filePath!);
+    final audioPlayerNotifier = Provider.of<AudioPlayerNotifier>(context);
+    if (audioPlayerNotifier.currentSong != null) {
+      setSong(audioPlayerNotifier.currentSong!.filePath!);
     }
 
-    if (audioPlayerModel.isPlaying) {
+    if (audioPlayerNotifier.isPlaying) {
       playSong();
     } else {
       pauseSong();
     }
 
-    if (audioPlayerModel.currentPlaylistId != null) {
-      setSuffledIndices(audioPlayerModel.currentPlaylistId!);
+    if (audioPlayerNotifier.currentPlaylistId != null) {
+      setSuffledIndices(audioPlayerNotifier.currentPlaylistId!);
     }
   }
 
@@ -158,15 +158,15 @@ class PlayerState extends State<Player> {
   }
 
   void playNextSong({bool checkShuffle = false}) async {
-    final audioPlayerModel =
+    final audioPlayerNotifier =
         Provider.of<AudioPlayerNotifier>(context, listen: false);
-    if (audioPlayerModel.currentPlaylistId == null ||
-        audioPlayerModel.currentPlaylistSongId == null) return;
+    if (audioPlayerNotifier.currentPlaylistId == null ||
+        audioPlayerNotifier.currentPlaylistSongId == null) return;
 
     final isar = Provider.of<Isar>(context, listen: false);
 
-    final currentPlaylistSong =
-        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
+    final currentPlaylistSong = await isar.playlistSongs
+        .get(audioPlayerNotifier.currentPlaylistSongId!);
 
     if (currentPlaylistSong == null) return;
 
@@ -188,7 +188,8 @@ class PlayerState extends State<Player> {
         ? await isar.playlistSongs.get(nextPlaylistSongIdFromShuffleList)
         : await isar.playlistSongs
             .filter()
-            .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+            .playlist(
+                (q) => q.idEqualTo(audioPlayerNotifier.currentPlaylistId!))
             .and()
             .orderLessThan(currentPlaylistSong.order)
             .sortByOrderDesc()
@@ -197,7 +198,7 @@ class PlayerState extends State<Player> {
     // Get the first song if nextsong is not found
     nextPlaylistSong ??= await isar.playlistSongs
         .filter()
-        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+        .playlist((q) => q.idEqualTo(audioPlayerNotifier.currentPlaylistId!))
         .sortByOrderDesc()
         .findFirst();
 
@@ -208,28 +209,28 @@ class PlayerState extends State<Player> {
     if (mounted) {
       context.read<AudioPlayerNotifier>().setSong(
           nextSong,
-          audioPlayerModel.currentPlaylistId!,
+          audioPlayerNotifier.currentPlaylistId!,
           nextPlaylistSong.id,
           context.read<AudioPlayerNotifier>().isPlaying);
     }
   }
 
   void playPreviousSong() async {
-    final audioPlayerModel =
+    final audioPlayerNotifier =
         Provider.of<AudioPlayerNotifier>(context, listen: false);
-    if (audioPlayerModel.currentPlaylistId == null ||
-        audioPlayerModel.currentPlaylistSongId == null) return;
+    if (audioPlayerNotifier.currentPlaylistId == null ||
+        audioPlayerNotifier.currentPlaylistSongId == null) return;
 
     final isar = Provider.of<Isar>(context, listen: false);
 
-    final currentPlaylistSong =
-        await isar.playlistSongs.get(audioPlayerModel.currentPlaylistSongId!);
+    final currentPlaylistSong = await isar.playlistSongs
+        .get(audioPlayerNotifier.currentPlaylistSongId!);
 
     if (currentPlaylistSong == null) return;
 
     final nextPlaylistSong = await isar.playlistSongs
         .filter()
-        .playlist((q) => q.idEqualTo(audioPlayerModel.currentPlaylistId!))
+        .playlist((q) => q.idEqualTo(audioPlayerNotifier.currentPlaylistId!))
         .and()
         .orderGreaterThan(currentPlaylistSong.order)
         .sortByOrder()
@@ -244,7 +245,7 @@ class PlayerState extends State<Player> {
     if (mounted) {
       context.read<AudioPlayerNotifier>().setSong(
           nextSong,
-          audioPlayerModel.currentPlaylistId!,
+          audioPlayerNotifier.currentPlaylistId!,
           nextPlaylistSong.id,
           context.read<AudioPlayerNotifier>().isPlaying);
     }
@@ -365,7 +366,7 @@ class PlayerState extends State<Player> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerNotifier>(
-      builder: (context, audioPlayerModel, child) {
+      builder: (context, audioPlayerNotifier, child) {
         return KeyboardListener(
           focusNode: _focusNode,
           autofocus: true,
@@ -377,9 +378,9 @@ class PlayerState extends State<Player> {
               const Spacer(),
               SizedBox(
                 height: 20.0,
-                child: audioPlayerModel.currentSong != null
+                child: audioPlayerNotifier.currentSong != null
                     ? Marquee(
-                        text: audioPlayerModel.currentSong!.filePath
+                        text: audioPlayerNotifier.currentSong!.filePath
                                 ?.split('/')
                                 .last ??
                             'Unknown',
@@ -454,7 +455,7 @@ class PlayerState extends State<Player> {
                           onPressed: playPreviousSong,
                           icon: const Icon(Icons.skip_previous_rounded),
                         ),
-                        if (audioPlayerModel.isPlaying) ...[
+                        if (audioPlayerNotifier.isPlaying) ...[
                           IconButton(
                             icon: const Icon(Icons.pause),
                             onPressed: () async {
@@ -467,11 +468,11 @@ class PlayerState extends State<Player> {
                           IconButton(
                             icon: Icon(
                               Icons.play_arrow,
-                              color: audioPlayerModel.currentSong == null
+                              color: audioPlayerNotifier.currentSong == null
                                   ? Colors.grey
                                   : null,
                             ),
-                            onPressed: audioPlayerModel.currentSong == null
+                            onPressed: audioPlayerNotifier.currentSong == null
                                 ? null
                                 : () async {
                                     context.read<AudioPlayerNotifier>().play();

@@ -25,6 +25,8 @@ class _SongListState extends State<SongList> {
   List<PlaylistSong> playlistSongs = [];
   List<PlaylistSong> filteredPlaylistSongs = [];
   Playlist? playlist;
+
+  Playlist? favoritePlaylist;
   Stream<void>? playlistStream;
   StreamSubscription<void>? subscription;
   TextEditingController searchController = TextEditingController();
@@ -43,11 +45,11 @@ class _SongListState extends State<SongList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final audioPlayerModel = Provider.of<AudioPlayerNotifier>(context);
-    if (audioPlayerModel.currentSong != null &&
-        audioPlayerModel.currentPlaylistId != null &&
-        audioPlayerModel.currentPlaylistId == playlist?.id) {
-      _listenSongChange(audioPlayerModel.currentPlaylistSongId!);
+    final audioPlayerNotifier = Provider.of<AudioPlayerNotifier>(context);
+    if (audioPlayerNotifier.currentSong != null &&
+        audioPlayerNotifier.currentPlaylistId != null &&
+        audioPlayerNotifier.currentPlaylistId == playlist?.id) {
+      _listenSongChange(audioPlayerNotifier.currentPlaylistSongId!);
     }
   }
 
@@ -122,6 +124,7 @@ class _SongListState extends State<SongList> {
     int index = playlistSongs
         .indexWhere((playlistSong) => playlistSong.id == playlistSongId);
     if (index != -1) {
+      debugPrint("RUn");
       itemScrollController.scrollTo(
           index: index,
           alignment: 0.5,
@@ -174,6 +177,8 @@ class _SongListState extends State<SongList> {
               : PageStorage(
                   bucket: pageBucket,
                   child: ScrollablePositionedList.separated(
+                    key:
+                        PageStorageKey<String>('songlist-${widget.playlistId}'),
                     itemCount: songsToDisplay.length,
                     itemScrollController: itemScrollController,
                     separatorBuilder: (context, index) => const Divider(

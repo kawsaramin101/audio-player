@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:music/data/playlist_song_model.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:music/componants/playlist/playlist_name_dialog.dart';
@@ -40,6 +41,22 @@ class _PlaylistsState extends State<Playlists>
         .watch(fireImmediately: true);
   }
 
+  void _deletePlaylist(int playlistId) async {
+    final isar = Provider.of<Isar>(context, listen: false);
+    await isar.writeTxn(() async {
+      final playlistSongs = await isar.playlistSongs
+          .filter()
+          .playlist((q) => q.idEqualTo(playlistId))
+          .findAll();
+
+      for (final playlistSong in playlistSongs) {
+        await isar.playlistSongs.delete(playlistSong.id);
+
+        await isar.playlists.delete(playlistId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -75,22 +92,64 @@ class _PlaylistsState extends State<Playlists>
                           ? const Color(0xFF2A2A2A)
                           : null,
                   child: ListTile(
-                    leading: const Icon(
-                      Icons.playlist_play_rounded,
-                      size: 50,
+                    leading: playlist.type == PlaylistType.favorite
+                        ? const Icon(
+                            Icons.favorite_rounded,
+                            size: 40.0,
+                          )
+                        : const Icon(
+                            Icons.playlist_play_rounded,
+                            size: 50,
+                          ),
+                    title: Padding(
+                      padding: EdgeInsets.only(
+                          left: playlist.type == PlaylistType.favorite
+                              ? 10.0
+                              : 0),
+                      child: Text(playlist.name),
                     ),
-                    title: Text(playlist.name),
                     subtitle: FutureBuilder<int>(
                       future: playlist.songs.count(),
                       builder: (context, countSnapshot) {
-                        return Text("Songs: ${countSnapshot.data ?? 0}");
+                        return Padding(
+                          padding: EdgeInsets.only(
+                              left: playlist.type == PlaylistType.favorite
+                                  ? 10.0
+                                  : 0),
+                          child: Text("Songs: ${countSnapshot.data ?? 0}"),
+                        );
                       },
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.more_vert),
-                      onPressed: () {
-                        // Add your onPressed code here
+                    trailing: PopupMenuButton<String>(
+                      itemBuilder: (BuildContext context) {
+                        return [
+                          const PopupMenuItem<String>(
+                            value: 'Delete',
+                            child: ListTile(
+                              leading: Icon(Icons.delete_rounded),
+                              title: Text('Delete'),
+                            ),
+                          ),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem<String>(
+                            value: 'Close',
+                            child: ListTile(
+                              leading: Icon(Icons.close_rounded),
+                              title: Text('Close'),
+                            ),
+                          ),
+                        ];
                       },
+                      onSelected: (String value) {
+                        switch (value) {
+                          case 'Delete':
+                            _deletePlaylist(playlist.id);
+                            break;
+                          case 'Close':
+                            break;
+                        }
+                      },
+                      icon: const Icon(Icons.more_vert),
                     ),
                     onTap: () {
                       Navigator.pushNamed(

@@ -17,8 +17,8 @@ class _PlaylistState extends State<Playlist> {
   playlist_model.Playlist? playlist;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     fetchPlaylist();
   }
 

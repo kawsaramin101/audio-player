@@ -33,28 +33,51 @@ class _SongCardState extends State<SongCard> {
   }
 
   void setFavouriteState() async {
+    final isar = Provider.of<Isar>(context, listen: false);
+
     await widget.song!.playlists.load();
 
-    if (widget.song!.playlists
-        .any((playlistSong) => playlistSong.playlist.value?.id == 2)) {
-      setState(() {
-        isFavourite = true;
-      });
+    var favouritePlaylist = await isar.playlists
+        .filter()
+        .typeEqualTo(PlaylistType.favorite)
+        .findFirst();
+
+    if (favouritePlaylist != null && mounted) {
+      if (widget.song!.playlists.any((playlistSong) =>
+          playlistSong.playlist.value?.id == favouritePlaylist.id)) {
+        setState(() {
+          isFavourite = true;
+        });
+      }
     }
   }
 
   void addToFavourite() async {
     final isar = Provider.of<Isar>(context, listen: false);
 
+    var favouritePlaylist = await isar.playlists
+        .filter()
+        .typeEqualTo(PlaylistType.favorite)
+        .findFirst();
+
+    if (favouritePlaylist == null) {
+      final playlistWithHighestOrder =
+          await isar.playlists.where().sortByOrderDesc().findFirst();
+
+      favouritePlaylist = Playlist()
+        ..name = 'Favorites'
+        ..order = (playlistWithHighestOrder?.order ?? 0) + 1
+        ..type = PlaylistType.favorite;
+      await isar.writeTxn(() async {
+        await isar.playlists.put(favouritePlaylist!);
+      });
+    }
+
     if (isFavourite) {
       // Remove from playlist
-      await deletePlaylistSong(isar, widget.song!, 2);
+      await deletePlaylistSong(isar, widget.song!, favouritePlaylist.id);
     } else {
-      final playlist = await isar.playlists.get(2);
-      if (playlist != null) {
-        await createPlaylistSong(isar, widget.song!, playlist);
-        // await widget.song!.playlists.load();
-      }
+      await createPlaylistSong(isar, widget.song!, favouritePlaylist);
     }
 
     setState(() {
@@ -130,24 +153,13 @@ class _SongCardState extends State<SongCard> {
                     children: <Widget>[
                       SizedBox(
                         height: 20,
-                        child: isHovered
-                            ? Marquee(
-                                text: widget.song!.filePath?.split('/').last ??
-                                    'Unknown',
-                                style: const TextStyle(fontSize: 13),
-                                scrollAxis: Axis.horizontal,
-                                velocity: 100.0,
-                                blankSpace: 80.0,
-                                startAfter: const Duration(milliseconds: 600),
-                              )
-                            : Text(
-                                widget.song!.filePath?.split('/').last ??
-                                    'Unknown',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                ),
-                              ),
+                        child: Text(
+                          widget.song!.filePath?.split('/').last ?? 'Unknown',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ],
                   ),
