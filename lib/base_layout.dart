@@ -76,19 +76,21 @@ class _MainScreenState extends State<MainScreen> {
                 }
               },
               appBar: AppBar(
-                title: ElevatedButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Playlist'),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      useRootNavigator: false,
-                      builder: (BuildContext context) {
-                        return const PlaylistNameDialog();
-                      },
-                    );
-                  },
-                ),
+                title: const Text("Playlists"),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        useRootNavigator: false,
+                        builder: (BuildContext context) {
+                          return const PlaylistNameDialog();
+                        },
+                      );
+                    },
+                  ),
+                ],
               ),
               length: playlists.length,
               layoutDelegate:
@@ -128,7 +130,9 @@ class _MainScreenState extends State<MainScreen> {
               // ),
             ),
       bottomNavigationBar: const BottomAppBar(
-        color: Color(0xFF232323),
+        elevation: 10.0,
+        // color: Color(0xff31363b),
+        color: Color.fromARGB(255, 56, 54, 54),
         height: 125.0,
         child: Player(),
       ),

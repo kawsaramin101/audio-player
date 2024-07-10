@@ -1,13 +1,41 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:music/data/playlist_model.dart';
+import 'package:music/notifiers/search_notifier.dart';
+import 'package:provider/provider.dart';
 import 'package:yaru/yaru.dart';
 
-class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
+class MyAppbar extends StatefulWidget implements PreferredSizeWidget {
   final Playlist? selectedPlaylist;
   const MyAppbar({super.key, required this.selectedPlaylist});
 
   @override
+  State<MyAppbar> createState() => _MyAppbarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+}
+
+class _MyAppbarState extends State<MyAppbar> {
+  Timer? _debounce;
+
+  @override
   Widget build(BuildContext context) {
+    final searchNotifierProvider = Provider.of<SearchNotifierProvider>(context);
+
+    void onSearchChanged(String newValue) {
+      if (newValue.isEmpty) {
+        searchNotifierProvider.valueNotifier.value = newValue;
+        _debounce?.cancel();
+      } else {
+        if (_debounce?.isActive ?? false) _debounce!.cancel();
+        _debounce = Timer(const Duration(milliseconds: 500), () {
+          searchNotifierProvider.valueNotifier.value = newValue;
+        });
+      }
+    }
+
     return YaruWindowTitleBar(
       titleSpacing: 0.0,
       backgroundColor: const Color(0xFF28292A),
@@ -58,12 +86,12 @@ class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
             width: 350,
             height: 34.0,
             child: TextField(
-              // onChanged: onSearchChanged,
+              onChanged: onSearchChanged,
               decoration: InputDecoration(
                 filled: true,
-                hintText: selectedPlaylist == null
+                hintText: widget.selectedPlaylist == null
                     ? "Search"
-                    : "Search ${selectedPlaylist!.name}",
+                    : "Search ${widget.selectedPlaylist!.name}",
                 hintStyle: const TextStyle(
                   fontSize: 13.0,
                 ),
@@ -85,7 +113,4 @@ class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
 }

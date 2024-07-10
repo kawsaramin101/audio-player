@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:music/base_layout.dart';
+import 'package:music/notifiers/search_notifier.dart';
 import 'package:yaru/yaru.dart';
 
 import 'package:music/data/playlist_song_model.dart';
@@ -45,6 +46,9 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => AudioPlayerNotifier()),
         Provider<Isar>.value(value: isar),
+        Provider<SearchNotifierProvider>(
+          create: (_) => SearchNotifierProvider(),
+        ),
       ],
       child: YaruTheme(
         data:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
+import 'package:music/notifiers/search_notifier.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:music/data/playlist_model.dart';
@@ -33,7 +34,7 @@ class _SongListState extends State<SongList> {
 
   final ItemScrollController itemScrollController = ItemScrollController();
 
-  Timer? _debounce;
+  String _searchTerm = "";
 
   @override
   void initState() {
@@ -49,6 +50,21 @@ class _SongListState extends State<SongList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final searchNotifierProvider = Provider.of<SearchNotifierProvider>(context);
+    final valueNotifier = searchNotifierProvider.valueNotifier;
+
+    valueNotifier.addListener(() {
+      if (valueNotifier.value != null && valueNotifier.value != "") {
+        _onSearchChanged(valueNotifier.value!);
+        setState(() {
+          _searchTerm = valueNotifier.value!;
+        });
+      } else {
+        setState(() {
+          _searchTerm = "";
+        });
+      }
+    });
   }
 
   void setupWatcher() {
@@ -94,28 +110,27 @@ class _SongListState extends State<SongList> {
   }
 
   void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (query.isNotEmpty) {
-        final queryParts = query.toLowerCase().split(' ');
-        final searchResults = playlistSongs.where((playlistSong) {
-          final song = playlistSong.song.value;
-          if (song != null) {
-            return queryParts.every((part) => song.filePathWords.any(
-                (word) => word.toLowerCase().contains(part.toLowerCase())));
-          }
-          return false;
-        }).toList();
+    if (query.isNotEmpty) {
+      debugPrint("Ran");
 
-        setState(() {
-          filteredPlaylistSongs = searchResults;
-        });
-      } else {
-        setState(() {
-          filteredPlaylistSongs = [];
-        });
-      }
-    });
+      final queryParts = query.toLowerCase().split(' ');
+      final searchResults = playlistSongs.where((playlistSong) {
+        final song = playlistSong.song.value;
+        if (song != null) {
+          return queryParts.every((part) => song.filePathWords
+              .any((word) => word.toLowerCase().contains(part.toLowerCase())));
+        }
+        return false;
+      }).toList();
+
+      setState(() {
+        filteredPlaylistSongs = searchResults;
+      });
+    } else {
+      setState(() {
+        filteredPlaylistSongs = [];
+      });
+    }
   }
 
   void _listenSongChange() {
@@ -137,37 +152,13 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
-    final songsToDisplay = searchController.text.isNotEmpty
-        ? filteredPlaylistSongs
-        : playlistSongs;
+    final songsToDisplay =
+        _searchTerm.isNotEmpty ? filteredPlaylistSongs : playlistSongs;
 
     return Column(
       children: [
         Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: SizedBox(
-                  height: 40.0,
-                  child: TextField(
-                    autocorrect: false,
-                    controller: searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: const InputDecoration(
-                      hintText: "Search",
-                      hintStyle: TextStyle(fontSize: 14.0),
-                      border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.search),
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 10.0, horizontal: 10.0),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            widget.child ?? Container()
-          ],
+          children: [widget.child ?? Container()],
         ),
         Expanded(
           child: songsToDisplay.isEmpty
