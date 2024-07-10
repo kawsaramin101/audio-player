@@ -49,7 +49,7 @@ class _AllSongsState extends State<AllSongs> {
     // If not, create it
     if (mainPlaylist == null) {
       mainPlaylist = Playlist()
-        ..name = 'main'
+        ..name = 'All Songs'
         ..order = 1
         ..type = PlaylistType.main;
       await isar.writeTxn(() async {

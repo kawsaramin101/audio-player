@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:music/componants/shared/player.dart';
 import 'package:music/routes/tabs/all_songs.dart';
 import 'package:music/routes/tabs/playlists.dart' as playlist;
+import 'package:yaru/yaru.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -31,7 +33,7 @@ class _HomeState extends State<Home>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
+    return YaruDetailPage(
       appBar: TabBar(
         controller: _tabController,
         tabs: const <Widget>[
@@ -53,6 +55,11 @@ class _HomeState extends State<Home>
             child: playlist.Playlists(),
           )
         ],
+      ),
+      bottomNavigationBar: const BottomAppBar(
+        color: Color(0xFF232323),
+        height: 125.0,
+        child: Player(),
       ),
     );
   }

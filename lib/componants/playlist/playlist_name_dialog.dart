@@ -64,11 +64,11 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
     if (context.mounted) {
       Navigator.of(context).pop();
 
-      await Navigator.pushNamed(
-        context,
-        "/playlist",
-        arguments: PlaylistArguments(playlistId),
-      );
+      // await Navigator.pushNamed(
+      //   context,
+      //   "/playlist",
+      //   arguments: PlaylistArguments(playlistId),
+      // );
     }
   }
 

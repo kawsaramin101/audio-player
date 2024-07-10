@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:marquee/marquee.dart';
+// import 'package:marquee/marquee.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/song_model.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
@@ -372,24 +372,32 @@ class PlayerState extends State<Player> {
           autofocus: true,
           onKeyEvent: _handleKeyPress,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               // Spacer widget to take up the empty space at the top
               const Spacer(),
               SizedBox(
                 height: 20.0,
                 child: audioPlayerNotifier.currentSong != null
-                    ? Marquee(
-                        text: audioPlayerNotifier.currentSong!.filePath
+                    ? Text(
+                        audioPlayerNotifier.currentSong!.filePath
                                 ?.split('/')
                                 .last ??
                             'Unknown',
                         style: const TextStyle(fontSize: 13),
-                        scrollAxis: Axis.horizontal,
-                        velocity: 100.0,
-                        blankSpace: 80.0,
-                        startAfter: const Duration(milliseconds: 500),
                       )
+
+                    // Marquee(
+                    //     text: audioPlayerNotifier.currentSong!.filePath
+                    //             ?.split('/')
+                    //             .last ??
+                    //         'Unknown',
+                    //     style: const TextStyle(fontSize: 13),
+                    //     scrollAxis: Axis.horizontal,
+                    //     velocity: 100.0,
+                    //     blankSpace: 80.0,
+                    //     startAfter: const Duration(milliseconds: 500),
+                    //   )
                     : const Text(""),
               ),
               const SizedBox(

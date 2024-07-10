@@ -12,6 +12,7 @@ dependencies:
     file_picker: ^8.0.3
     flutter:
         sdk: flutter
+    handy_window: ^0.4.0
     isar: ^3.1.0+1
     isar_flutter_libs: ^3.1.0+1
     marquee: ^2.2.3
@@ -21,6 +22,7 @@ dependencies:
     provider: ^6.1.2
     scrollable_positioned_list: ^0.3.8
     shared_preferences: ^2.2.3
+    yaru: ^4.1.0
 
 dev_dependencies:
     flutter_test:
@@ -31,6 +33,26 @@ dev_dependencies:
 
 flutter:
     uses-material-design: true
+
+    fonts:
+        - family: RobotoMono
+          fonts:
+              - asset: fonts/RobotoMono-Bold.ttf
+                weight: 700
+              - asset: fonts/RobotoMono-Light.ttf
+                weight: 300
+        - family: Roboto
+          fonts:
+              - asset: fonts/Roboto-Bold.ttf
+                weight: 700
+              - asset: fonts/Roboto-Light.ttf
+                weight: 300
+        - family: NotoSans
+          fonts:
+              - asset: fonts/NotoSans-Bold.ttf
+                weight: 700
+              - asset: fonts/NotoSans-Light.ttf
+                weight: 300
 
 dependency_overrides:
     fading_edge_scrollview: ^4.1.1
