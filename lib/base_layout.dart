@@ -80,6 +80,7 @@ class _MainScreenState extends State<MainScreen> {
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.add),
+                    tooltip: "New playlist",
                     onPressed: () {
                       showDialog(
                         context: context,
