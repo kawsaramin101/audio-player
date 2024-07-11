@@ -24,6 +24,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   late Isar isar;
   bool isLoading = true;
+  int? _dragTargetIndex;
 
   late Stream<void>? playlistStream;
 
@@ -96,10 +97,65 @@ class _MainScreenState extends State<MainScreen> {
               length: playlists.length,
               layoutDelegate:
                   const YaruMasterFixedPaneDelegate(paneWidth: 250.0),
-
               tileBuilder: (context, index, selected, availableWidth) {
-                return PlaylistTile(
-                    selected: selected, playlist: playlists[index]);
+                return Column(
+                  children: [
+                    Draggable<int>(
+                      data: index,
+                      feedback: Material(
+                        elevation: 4.0,
+                        child: SizedBox(
+                          width: availableWidth,
+                          child: PlaylistTile(
+                            selected: selected,
+                            playlist: playlists[index],
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: PlaylistTile(
+                          selected: selected,
+                          playlist: playlists[index],
+                        ),
+                      ),
+                      child: DragTarget<int>(
+                        onAcceptWithDetails: (details) {
+                          final oldIndex = details.data;
+                          setState(() {
+                            final playlist = playlists.removeAt(oldIndex);
+                            playlists.insert(index, playlist);
+                            _dragTargetIndex = null;
+                          });
+                        },
+                        onWillAcceptWithDetails: (details) {
+                          return details.data != index;
+                        },
+                        onMove: (details) {
+                          setState(() {
+                            _dragTargetIndex = index;
+                          });
+                        },
+                        onLeave: (data) {
+                          setState(() {
+                            _dragTargetIndex = null;
+                          });
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          return PlaylistTile(
+                            selected: selected,
+                            playlist: playlists[index],
+                          );
+                        },
+                      ),
+                    ),
+                    if (_dragTargetIndex == index)
+                      Container(
+                        height: 2,
+                        color: Colors.grey[400],
+                      ),
+                  ],
+                );
               },
               pageBuilder: (context, index) => SongList(
                 playlistId: playlists[index].id,

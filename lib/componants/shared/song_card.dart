@@ -127,7 +127,7 @@ class _SongCardState extends State<SongCard> {
           color: context.watch<AudioPlayerNotifier>().currentSong != null &&
                   context.watch<AudioPlayerNotifier>().currentSong!.id ==
                       widget.song!.id
-              ? const Color(0xFF2A2A2A)
+              ? const Color.fromARGB(255, 48, 48, 51)
               : null,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 16.0, 12.0, 16.0),

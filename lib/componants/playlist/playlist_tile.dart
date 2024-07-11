@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:music/data/playlist_model.dart';
+import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:yaru/yaru.dart';
+import 'package:provider/provider.dart';
 
-class PlaylistTile extends StatelessWidget {
+class PlaylistTile extends StatefulWidget {
   final bool selected;
   final Playlist playlist;
 
@@ -10,16 +12,26 @@ class PlaylistTile extends StatelessWidget {
       {super.key, required this.selected, required this.playlist});
 
   @override
+  State<PlaylistTile> createState() => _PlaylistTileState();
+}
+
+class _PlaylistTileState extends State<PlaylistTile> {
+  @override
   Widget build(BuildContext context) {
+    final audioPlayerNotifier = Provider.of<AudioPlayerNotifier>(context);
+
     return YaruMasterTile(
-      selected: selected,
-      leading: const Icon(
-        Icons.playlist_play_rounded,
+      selected: widget.selected,
+      leading: Icon(
+        audioPlayerNotifier.currentPlaylistId != null &&
+                audioPlayerNotifier.currentPlaylistId! == widget.playlist.id
+            ? Icons.graphic_eq_outlined
+            : Icons.playlist_play_rounded,
         size: 30,
       ),
-      title: Text(playlist.name),
+      title: Text(widget.playlist.name),
       subtitle: FutureBuilder<int>(
-        future: playlist.songs.count(),
+        future: widget.playlist.songs.count(),
         builder: (context, countSnapshot) {
           return Text("Songs: ${countSnapshot.data ?? 0}");
         },
