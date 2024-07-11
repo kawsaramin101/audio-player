@@ -38,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     isar = Provider.of<Isar>(context, listen: false);
     fetchPlaylist();
+    setupPlaylistStream();
   }
 
   void setupPlaylistStream() async {
@@ -53,12 +54,6 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       playlists = fetchedPlaylist;
       isLoading = false;
-    });
-
-    setState(() {
-      selectedPlaylist = playlists.firstWhere(
-        (item) => item.type == PlaylistType.main,
-      );
     });
   }
 

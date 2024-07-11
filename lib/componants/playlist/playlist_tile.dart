@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/notifiers/audio_player_notifier.dart';
 import 'package:yaru/yaru.dart';
@@ -16,6 +17,14 @@ class PlaylistTile extends StatefulWidget {
 }
 
 class _PlaylistTileState extends State<PlaylistTile> {
+  late Isar isar;
+
+  @override
+  void initState() {
+    super.initState();
+    isar = Provider.of<Isar>(context, listen: false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioPlayerNotifier = Provider.of<AudioPlayerNotifier>(context);
@@ -57,20 +66,18 @@ class _PlaylistTileState extends State<PlaylistTile> {
                 padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
               ),
               onPressed: () => {
-                // _deletePlaylist(playlist.id);
+                // _renamePlaylist(playlist.id);
               },
-              leadingIcon: const Icon(Icons.delete_rounded),
-              child: const Text('Delete'),
+              leadingIcon: const Icon(Icons.edit_note_rounded),
+              child: const Text('Rename'),
             ),
             MenuItemButton(
               style: ButtonStyle(
                 padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
               ),
-              onPressed: () => {
-                // _renamePlaylist(playlist.id);
-              },
-              leadingIcon: const Icon(Icons.edit_note_rounded),
-              child: const Text('Rename'),
+              onPressed: () => {deletePlaylist(isar, widget.playlist.id)},
+              leadingIcon: const Icon(Icons.delete_rounded),
+              child: const Text('Delete'),
             ),
             MenuItemButton(
               style: ButtonStyle(

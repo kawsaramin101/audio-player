@@ -22,3 +22,17 @@ enum PlaylistType {
   local,
   favorite,
 }
+
+void deletePlaylist(Isar isar, int playlistId) async {
+  await isar.writeTxn(() async {
+    final playlistSongs = await isar.playlistSongs
+        .filter()
+        .playlist((q) => q.idEqualTo(playlistId))
+        .findAll();
+
+    for (final playlistSong in playlistSongs) {
+      await isar.playlistSongs.delete(playlistSong.id);
+    }
+    await isar.playlists.delete(playlistId);
+  });
+}
