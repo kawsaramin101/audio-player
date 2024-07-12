@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:music/componants/playlist/add_or_remove_song_dialog.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/notifiers/search_notifier.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,12 @@ class _MyAppbarState extends State<MyAppbar> {
   Timer? _debounce;
 
   @override
+  void initState() {
+    super.initState();
+    debugPrint("${widget.selectedPlaylist}");
+  }
+
+  @override
   Widget build(BuildContext context) {
     final searchNotifierProvider = Provider.of<SearchNotifierProvider>(context);
 
@@ -39,6 +46,7 @@ class _MyAppbarState extends State<MyAppbar> {
     return YaruWindowTitleBar(
       titleSpacing: 0.0,
       backgroundColor: const Color(0xFF28292A),
+      centerTitle: true,
       leading: MenuAnchor(
           builder:
               (BuildContext context, MenuController controller, Widget? child) {
@@ -74,43 +82,61 @@ class _MyAppbarState extends State<MyAppbar> {
               child: const Text('Keyboard Shortcuts'),
             ),
           ]),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          YaruIconButton(
-            icon: const Icon(YaruIcons.plus),
-            onPressed: () {},
-            tooltip: "Create note",
-          ),
-          SizedBox(
-            width: 350,
-            height: 34.0,
-            child: TextField(
-              onChanged: onSearchChanged,
-              decoration: InputDecoration(
-                filled: true,
-                hintText: widget.selectedPlaylist == null
-                    ? "Search"
-                    : "Search ${widget.selectedPlaylist!.name}",
-                hintStyle: const TextStyle(
-                  fontSize: 13.0,
-                ),
-                prefixIcon: const Icon(
-                  YaruIcons.search,
-                ),
-                border: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 8.0),
-              ),
-              textAlignVertical: TextAlignVertical.center,
+      title: SizedBox(
+        width: 350,
+        height: 34.0,
+        child: TextField(
+          onChanged: onSearchChanged,
+          decoration: InputDecoration(
+            filled: true,
+            hintText: widget.selectedPlaylist == null
+                ? "Search"
+                : "Search ${widget.selectedPlaylist!.name}",
+            hintStyle: const TextStyle(
+              fontSize: 13.0,
             ),
+            prefixIcon: const Icon(
+              YaruIcons.search,
+            ),
+            border: const OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 8.0),
           ),
-          const SizedBox(
-            width: 8.0,
-          ),
-        ],
+          textAlignVertical: TextAlignVertical.center,
+        ),
       ),
+      actions: [
+        if (widget.selectedPlaylist?.type == PlaylistType.main) ...[
+          YaruIconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {},
+            tooltip: "Add Song",
+          ),
+          YaruIconButton(
+            icon: const Icon(Icons.manage_search_rounded),
+            onPressed: () {},
+            tooltip: "Scan storage",
+          ),
+        ] else ...[
+          YaruIconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              showDialog(
+                context: context,
+                useRootNavigator: false,
+                builder: (BuildContext context) {
+                  return AddOrRemoveSongDialog(
+                    playlist: widget.selectedPlaylist!,
+                    title: "Edit playlist ${widget.selectedPlaylist?.name}",
+                  );
+                },
+              );
+            },
+            tooltip: "Edit playlist ${widget.selectedPlaylist?.name}",
+          ),
+        ]
+      ],
     );
   }
 }

@@ -78,7 +78,8 @@ class _AddOrRemoveSongDialogState extends State<AddOrRemoveSongDialog> {
         style: const TextStyle(fontSize: 18.0),
       ),
       content: SizedBox(
-        width: double.maxFinite,
+        width: 350,
+        height: 350,
         child: songs.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : ListView.builder(

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:music/componants/playlist/playlist_name_dialog.dart';
 import 'package:music/componants/playlist/playlist_tile.dart';
 import 'package:music/componants/shared/appbar.dart';
-import 'package:music/componants/shared/songlist.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/routes/tabs/all_songs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yaru/yaru.dart';
 
 import 'package:music/componants/shared/player.dart';
@@ -14,8 +14,8 @@ import 'package:music/componants/shared/player.dart';
 import 'package:provider/provider.dart';
 import 'package:isar/isar.dart';
 
-import 'package:music/data/playlist_model.dart';
-import 'package:music/routes/playlist.dart' as playlistRoute;
+import 'package:music/data/playlist_model.dart' as playlist_model;
+import 'package:music/routes/playlist.dart' as playlist_route;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -29,14 +29,17 @@ class _MainScreenState extends State<MainScreen> {
   bool isLoading = true;
   int? _dragTargetIndex;
 
-  List<Playlist> playlists = [];
-  Playlist? selectedPlaylist;
+  List<playlist_model.Playlist> playlists = [];
+
+  playlist_model.Playlist? selectedPlaylist;
+  int selectedPlaylistIndex = 0;
+
+  YaruPageController? controller;
 
   @override
   void initState() {
     super.initState();
     isar = Provider.of<Isar>(context, listen: false);
-    fetchPlaylist();
     setupPlaylistStream();
   }
 
@@ -62,22 +65,46 @@ class _MainScreenState extends State<MainScreen> {
       playlists = fetchedPlaylist;
       isLoading = false;
     });
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      if (prefs.getInt("selectedPlaylistIndex")! <= playlists.length) {
+        selectedPlaylistIndex = prefs.getInt("selectedPlaylistIndex") ?? 0;
+      } else {
+        selectedPlaylistIndex = 0;
+      }
+    });
+  }
+
+  void deletePlaylist(int id) {
+    controller?.index = 0;
+    playlist_model.deletePlaylist(isar, id);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyAppbar(selectedPlaylist: selectedPlaylist),
+      appBar: !isLoading
+          ? MyAppbar(
+              selectedPlaylist:
+                  selectedPlaylist ?? playlists[selectedPlaylistIndex])
+          : AppBar(),
       body: isLoading
           ? const Center(child: YaruCircularProgressIndicator())
           : YaruMasterDetailPage(
-              onSelected: (index) {
+              controller: controller,
+              onSelected: (index) async {
                 if (index != null) {
                   setState(() {
                     selectedPlaylist = playlists[index];
                   });
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  prefs.setInt("selectedPlaylistIndex", index);
                 }
               },
+              initialIndex: selectedPlaylistIndex,
               appBar: AppBar(
                 title: const Text("Playlists"),
                 actions: [
@@ -109,6 +136,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: SizedBox(
                           width: availableWidth,
                           child: PlaylistTile(
+                            deletePlaylist: deletePlaylist,
                             selected: selected,
                             playlist: playlists[index],
                           ),
@@ -117,6 +145,7 @@ class _MainScreenState extends State<MainScreen> {
                       childWhenDragging: Opacity(
                         opacity: 0.5,
                         child: PlaylistTile(
+                          deletePlaylist: deletePlaylist,
                           selected: selected,
                           playlist: playlists[index],
                         ),
@@ -145,6 +174,7 @@ class _MainScreenState extends State<MainScreen> {
                         },
                         builder: (context, candidateData, rejectedData) {
                           return PlaylistTile(
+                            deletePlaylist: deletePlaylist,
                             selected: selected,
                             playlist: playlists[index],
                           );
@@ -160,10 +190,10 @@ class _MainScreenState extends State<MainScreen> {
                 );
               },
               pageBuilder: (context, index) {
-                if (playlists[index].type == PlaylistType.main) {
+                if (playlists[index].type == playlist_model.PlaylistType.main) {
                   return const AllSongs();
                 }
-                return playlistRoute.Playlist(
+                return playlist_route.Playlist(
                   playlistId: playlists[index].id,
                 );
               },

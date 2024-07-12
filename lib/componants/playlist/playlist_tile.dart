@@ -8,9 +8,13 @@ import 'package:provider/provider.dart';
 class PlaylistTile extends StatefulWidget {
   final bool selected;
   final Playlist playlist;
+  final Function(int) deletePlaylist;
 
   const PlaylistTile(
-      {super.key, required this.selected, required this.playlist});
+      {super.key,
+      required this.selected,
+      required this.playlist,
+      required this.deletePlaylist});
 
   @override
   State<PlaylistTile> createState() => _PlaylistTileState();
@@ -76,7 +80,9 @@ class _PlaylistTileState extends State<PlaylistTile> {
                 style: ButtonStyle(
                   padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
                 ),
-                onPressed: () => {deletePlaylist(isar, widget.playlist.id)},
+                onPressed: () {
+                  widget.deletePlaylist(widget.playlist.id);
+                },
                 leadingIcon: const Icon(Icons.delete_rounded),
                 child: const Text('Delete'),
               ),
