@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:provider/provider.dart';
 import 'package:music/data/playlist_model.dart';
 
@@ -47,7 +46,6 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
       return;
     }
 
-    int playlistId = 0;
     await isar.writeTxn(() async {
       final playlistWithHighestOrder =
           await isar.playlists.where().sortByOrderDesc().findFirst();
@@ -58,17 +56,11 @@ class _PlaylistNameDialogState extends State<PlaylistNameDialog> {
         ..type =
             isFavouriteChecked ? PlaylistType.favorite : PlaylistType.local;
 
-      playlistId = await isar.playlists.put(newPlaylist);
+      await isar.playlists.put(newPlaylist);
     });
 
     if (context.mounted) {
       Navigator.of(context).pop();
-
-      // await Navigator.pushNamed(
-      //   context,
-      //   "/playlist",
-      //   arguments: PlaylistArguments(playlistId),
-      // );
     }
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:music/componants/playlist/add_or_remove_song_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:music/data/playlist_model.dart' as playlist_model;
-import 'package:music/routes/route_arguments/playlist_arguments.dart';
 import 'package:music/componants/shared/songlist.dart';
 
 class Playlist extends StatefulWidget {
@@ -34,14 +34,6 @@ class _PlaylistState extends State<Playlist> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          color: Theme.of(context).primaryColor,
-          child: AppBar(
-            backgroundColor: Colors.grey[900],
-            title: Text('Playlist ${playlist?.name ?? ''}'),
-            automaticallyImplyLeading: true, // Enable back button
-          ),
-        ),
         playlist == null
             ? const Center(child: Text("Playlist not found!"))
             : playlist!.songs.isEmpty
@@ -49,11 +41,17 @@ class _PlaylistState extends State<Playlist> {
                     child: Center(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            "/addSongToPlaylist",
-                            arguments: PlaylistArguments(playlist!.id),
-                          );
+                          showDialog(
+                            context: context,
+                            useRootNavigator: false,
+                            builder: (BuildContext context) {
+                              return AddOrRemoveSongDialog(
+                                playlist: playlist!,
+                              );
+                            },
+                          ).then((_) {
+                            fetchPlaylist();
+                          });
                         },
                         child: const Text('Add Song'),
                       ),
@@ -69,13 +67,16 @@ class _PlaylistState extends State<Playlist> {
                               padding: const EdgeInsets.all(8.0),
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    "/addSongToPlaylist",
-                                    arguments: PlaylistArguments(playlist!.id),
-                                  ).then((_) {
-                                    fetchPlaylist();
-                                  });
+                                  showDialog(
+                                    context: context,
+                                    useRootNavigator: false,
+                                    builder: (BuildContext context) {
+                                      return AddOrRemoveSongDialog(
+                                        playlist: playlist!,
+                                        title: "Add or Remove Song",
+                                      );
+                                    },
+                                  );
                                 },
                                 child: const Text('Add or Remove Song'),
                               ),

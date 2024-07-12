@@ -92,7 +92,7 @@ ThemeData _buildTheme(ThemeData base, Brightness brightness) {
 
   return base.copyWith(
     brightness: brightness,
-    splashFactory: NoSplash.splashFactory,
+    // splashFactory: NoSplash.splashFactory,
     textTheme: Typography().white.apply(
           fontFamily: fontFamily,
         ),

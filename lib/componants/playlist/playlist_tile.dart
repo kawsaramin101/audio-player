@@ -34,7 +34,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
       leading: Icon(
         audioPlayerNotifier.currentPlaylistId != null &&
                 audioPlayerNotifier.currentPlaylistId! == widget.playlist.id
-            ? Icons.graphic_eq_outlined
+            ? Icons.graphic_eq_rounded
             : Icons.playlist_play_rounded,
         size: 30,
       ),
@@ -71,14 +71,16 @@ class _PlaylistTileState extends State<PlaylistTile> {
               leadingIcon: const Icon(Icons.edit_note_rounded),
               child: const Text('Rename'),
             ),
-            MenuItemButton(
-              style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
+            if (widget.playlist.type != PlaylistType.main) ...[
+              MenuItemButton(
+                style: ButtonStyle(
+                  padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),
+                ),
+                onPressed: () => {deletePlaylist(isar, widget.playlist.id)},
+                leadingIcon: const Icon(Icons.delete_rounded),
+                child: const Text('Delete'),
               ),
-              onPressed: () => {deletePlaylist(isar, widget.playlist.id)},
-              leadingIcon: const Icon(Icons.delete_rounded),
-              child: const Text('Delete'),
-            ),
+            ],
             MenuItemButton(
               style: ButtonStyle(
                 padding: WidgetStateProperty.all(const EdgeInsets.all(16.0)),

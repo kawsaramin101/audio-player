@@ -5,6 +5,8 @@ import 'package:music/componants/playlist/playlist_name_dialog.dart';
 import 'package:music/componants/playlist/playlist_tile.dart';
 import 'package:music/componants/shared/appbar.dart';
 import 'package:music/componants/shared/songlist.dart';
+import 'package:music/data/playlist_song_model.dart';
+import 'package:music/routes/tabs/all_songs.dart';
 import 'package:yaru/yaru.dart';
 
 import 'package:music/componants/shared/player.dart';
@@ -13,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:isar/isar.dart';
 
 import 'package:music/data/playlist_model.dart';
+import 'package:music/routes/playlist.dart' as playlistRoute;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,10 +29,6 @@ class _MainScreenState extends State<MainScreen> {
   bool isLoading = true;
   int? _dragTargetIndex;
 
-  late Stream<void>? playlistStream;
-
-  StreamSubscription<void>? playlistSubscription;
-
   List<Playlist> playlists = [];
   Playlist? selectedPlaylist;
 
@@ -42,8 +41,16 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void setupPlaylistStream() async {
-    playlistStream = isar.playlists.where().watch(fireImmediately: true);
-    playlistSubscription = playlistStream?.listen((_) {
+    final Stream<void> playlistStream =
+        isar.playlists.where().watch(fireImmediately: true);
+    final Stream<void> playlistSongStream =
+        isar.playlistSongs.where().watch(fireImmediately: true);
+
+    playlistStream.listen((_) {
+      fetchPlaylist();
+    });
+
+    playlistSongStream.listen((_) {
       fetchPlaylist();
     });
   }
@@ -152,9 +159,14 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 );
               },
-              pageBuilder: (context, index) => SongList(
-                playlistId: playlists[index].id,
-              ),
+              pageBuilder: (context, index) {
+                if (playlists[index].type == PlaylistType.main) {
+                  return const AllSongs();
+                }
+                return playlistRoute.Playlist(
+                  playlistId: playlists[index].id,
+                );
+              },
               // pageBuilder: (context, index) => Navigator(
               //   onGenerateRoute: (RouteSettings settings) {
               //     WidgetBuilder builder;

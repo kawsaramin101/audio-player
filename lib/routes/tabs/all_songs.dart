@@ -10,7 +10,6 @@ import 'package:music/componants/shared/songlist.dart';
 import 'package:music/data/playlist_model.dart';
 import 'package:music/data/playlist_song_model.dart';
 import 'package:music/data/song_model.dart';
-// import 'package:music/utils/mediainfo_wrapper.dart';
 
 import 'package:provider/provider.dart';
 
@@ -108,9 +107,10 @@ class _AllSongsState extends State<AllSongs> {
           child: SongList(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: pickAndScanFolder,
-                child: const Text('Pick A Folder'),
+                icon: const Icon(Icons.search_rounded),
+                label: const Text('Scan'),
               ),
             ),
           ),
