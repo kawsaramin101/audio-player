@@ -63,24 +63,6 @@ class _PlaylistState extends State<Playlist> {
                         Expanded(
                           child: SongList(
                             playlistId: playlist!.id,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    useRootNavigator: false,
-                                    builder: (BuildContext context) {
-                                      return AddOrRemoveSongDialog(
-                                        playlist: playlist!,
-                                        title: "Add or Remove Song",
-                                      );
-                                    },
-                                  );
-                                },
-                                child: const Text('Add or Remove Song'),
-                              ),
-                            ),
                           ),
                         ),
                       ],

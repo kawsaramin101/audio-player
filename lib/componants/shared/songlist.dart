@@ -82,7 +82,10 @@ class _SongListState extends State<SongList> {
     if (widget.playlistId != null) {
       playlist = await isar.playlists.get(widget.playlistId!);
     } else {
-      playlist = await isar.playlists.filter().nameEqualTo('main').findFirst();
+      playlist = await isar.playlists
+          .filter()
+          .typeEqualTo(PlaylistType.main)
+          .findFirst();
     }
 
     if (playlist != null) {

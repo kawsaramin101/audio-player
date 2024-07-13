@@ -30,7 +30,6 @@ void main() async {
   );
 
   // await clearDatabase(isar);
-  // TODO: songs doesn't show when added for the first time in playlist page
   // TODO: Show artist and album name
   // TODO: Song sorting by date, name
   // TODO: Custom sorting using drag and drop, show drag handle on hover

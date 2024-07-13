@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 import 'package:music/componants/playlist/add_or_remove_song_dialog.dart';
 import 'package:music/data/playlist_model.dart';
+import 'package:music/data/scan_folder.dart';
 import 'package:music/notifiers/search_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:yaru/yaru.dart';
@@ -20,29 +22,36 @@ class MyAppbar extends StatefulWidget implements PreferredSizeWidget {
 
 class _MyAppbarState extends State<MyAppbar> {
   Timer? _debounce;
+  late Isar isar;
+
+  late SearchNotifierProvider searchNotifierProvider;
 
   @override
   void initState() {
     super.initState();
-    debugPrint("${widget.selectedPlaylist}");
+    isar = Provider.of<Isar>(context, listen: false);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    searchNotifierProvider = Provider.of<SearchNotifierProvider>(context);
+  }
+
+  void onSearchChanged(String newValue) {
+    if (newValue.isEmpty) {
+      searchNotifierProvider.valueNotifier.value = newValue;
+      _debounce?.cancel();
+    } else {
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        searchNotifierProvider.valueNotifier.value = newValue;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final searchNotifierProvider = Provider.of<SearchNotifierProvider>(context);
-
-    void onSearchChanged(String newValue) {
-      if (newValue.isEmpty) {
-        searchNotifierProvider.valueNotifier.value = newValue;
-        _debounce?.cancel();
-      } else {
-        if (_debounce?.isActive ?? false) _debounce!.cancel();
-        _debounce = Timer(const Duration(milliseconds: 500), () {
-          searchNotifierProvider.valueNotifier.value = newValue;
-        });
-      }
-    }
-
     return YaruWindowTitleBar(
       titleSpacing: 0.0,
       backgroundColor: const Color(0xFF28292A),
@@ -107,16 +116,14 @@ class _MyAppbarState extends State<MyAppbar> {
         ),
       ),
       actions: [
-        if (widget.selectedPlaylist?.type == PlaylistType.main) ...[
-          YaruIconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {},
-            tooltip: "Add Song",
-          ),
+        if (widget.selectedPlaylist == null ||
+            widget.selectedPlaylist?.type == PlaylistType.main) ...[
           YaruIconButton(
             icon: const Icon(Icons.manage_search_rounded),
-            onPressed: () {},
-            tooltip: "Scan storage",
+            onPressed: () {
+              pickAndScanFolder(isar);
+            },
+            tooltip: "Scan folder",
           ),
         ] else ...[
           YaruIconButton(
